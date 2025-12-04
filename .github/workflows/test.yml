@@ -1,0 +1,14 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  testJob:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "##[error]Error"
+          echo "##[warning]Warning"
+          echo "##[info]Info"
+          echo "##[debug]Debug"
+          echo "##[command]Command"
+          
