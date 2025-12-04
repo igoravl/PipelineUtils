@@ -1,17 +1,17 @@
 <#
 .SYNOPSIS
-Sets the release name in Azure DevOps classic releases.
+Sets the release name in CI/CD pipelines.
 
 .DESCRIPTION
-This function sets the release name using Azure DevOps Pipelines logging commands.
+This function sets the release name using the appropriate logging commands for the detected pipeline.
 The release name can be modified during a release run to provide custom naming.
 
 .EXAMPLE
-Set-PipelineReleaseNumber -ReleaseName "1.0.42"
+Set-PipelineReleaseNumber -ReleaseNumber "1.0.42"
 # Sets the release name to 1.0.42
 
 .EXAMPLE
-Set-PipelineReleaseNumber -ReleaseName "$(Get-Date -Format 'yyyy.MM.dd').$env:RELEASE_RELEASEID"
+Set-PipelineReleaseNumber -ReleaseNumber "$(Get-Date -Format 'yyyy.MM.dd').$env:RELEASE_RELEASEID"
 # Sets the release name using a date-based format with the release ID
 #>
 function Set-PipelineReleaseNumber {
@@ -22,12 +22,21 @@ function Set-PipelineReleaseNumber {
         [string]$ReleaseNumber
     )
 
-    if ((Test-PipelineContext)) {
-        $prefix = '##vso[release.updatereleasename]'
+    $pipelineType = Get-PipelineType
+    
+    switch ($pipelineType) {
+        ([PipelineType]::AzureDevOps) {
+            Write-Output "##vso[release.updatereleasename]$ReleaseNumber"
+        }
+        ([PipelineType]::GitHubActions) {
+            # GitHub Actions doesn't have classic releases, but we can set as notice and env var
+            Write-Output "::notice title=Release Number::$ReleaseNumber"
+            if ($env:GITHUB_ENV) {
+                Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_NUMBER=$ReleaseNumber"
+            }
+        }
+        default {
+            Write-Output "Release name: $ReleaseNumber"
+        }
     }
-    else {
-        $prefix = 'Release name: '
-    }
-
-    Write-Output "$prefix$ReleaseNumber"
 }

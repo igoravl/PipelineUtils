@@ -4,7 +4,9 @@
         [string] $Status = 'Succeeded'
     )
 
-    if(-not (Test-PipelineContext)) {
+    $pipelineType = Get-PipelineType
+    
+    if($pipelineType -eq [PipelineType]::Unknown) {
         return
     }
 
@@ -13,6 +15,20 @@
     }
 
     if ($Status -ne 'Succeeded') {
-        Write-Host "##vso[task.complete result=$Status;]"
+        switch ($pipelineType) {
+            ([PipelineType]::AzureDevOps) {
+                Write-Host "##vso[task.complete result=$Status;]"
+            }
+            ([PipelineType]::GitHubActions) {
+                # GitHub Actions uses exit codes to signal failure
+                if ($Status -eq 'Failed') {
+                    Write-Host "::error::Task completed with status: $Status"
+                    exit 1
+                }
+                else {
+                    Write-Host "::warning::Task completed with status: $Status"
+                }
+            }
+        }
     }
 }

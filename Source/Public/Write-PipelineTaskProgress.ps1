@@ -1,10 +1,11 @@
 function Write-PipelineTaskProgress {
     <#
     .SYNOPSIS
-    Updates the progress of the current Azure DevOps Pipeline task.
+    Updates the progress of the current pipeline task/step.
     
     .DESCRIPTION
-    This function updates the progress indicator for the current task using Azure DevOps Pipelines logging commands.
+    This function updates the progress indicator for the current task using the appropriate
+    logging commands for the detected pipeline environment.
     
     .PARAMETER CurrentOperation
     The current operation being performed.
@@ -28,10 +29,26 @@ function Write-PipelineTaskProgress {
         [int]$PercentComplete
     )
     
-    $properties = "currentoperation=$CurrentOperation"
-    if ($PSBoundParameters.ContainsKey('PercentComplete')) {
-        $properties += ";percentcomplete=$PercentComplete"
-    }
+    $pipelineType = Get-PipelineType
     
-    Write-Output "##vso[task.setprogress $properties]"
+    switch ($pipelineType) {
+        ([PipelineType]::AzureDevOps) {
+            $properties = "currentoperation=$CurrentOperation"
+            if ($PSBoundParameters.ContainsKey('PercentComplete')) {
+                $properties += ";percentcomplete=$PercentComplete"
+            }
+            Write-Output "##vso[task.setprogress $properties]"
+        }
+        ([PipelineType]::GitHubActions) {
+            # GitHub Actions doesn't have native task progress, use notice
+            $message = $CurrentOperation
+            if ($PSBoundParameters.ContainsKey('PercentComplete')) {
+                $message += " - $PercentComplete% complete"
+            }
+            Write-Output "::notice::$message"
+        }
+        default {
+            Write-Host "$CurrentOperation" -ForegroundColor Cyan
+        }
+    }
 }

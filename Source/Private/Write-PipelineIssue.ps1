@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-    Writes a log message to the Azure Pipelines log or console.
+    Writes a log message to the pipeline log or console.
 
 .DESCRIPTION
-    This advanced function logs messages of type Warning, Error, Info, or Debug to Azure Pipelines or the console. It supports additional metadata such as source file, line, column, and issue code, and can optionally prevent updating the job status. The function is intended for use in CI/CD scenarios to provide rich, contextual logging.
+    This advanced function logs messages of type Warning, Error, Info, or Debug to Azure Pipelines, GitHub Actions, or the console. It supports additional metadata such as source file, line, column, and issue code, and can optionally prevent updating the job status. The function is intended for use in CI/CD scenarios to provide rich, contextual logging.
 
 .EXAMPLE
     Write-PipelineLog -Message "An error occurred." -LogType Error
-    # Logs an error message to the Azure Pipelines log.
+    # Logs an error message to the pipeline log.
 
 .EXAMPLE
     Write-PipelineLog -Message "File not found." -LogType Warning -SourcePath "src/app.ps1" -LineNumber 42
@@ -20,7 +20,7 @@
 .NOTES
     Author: igoravl
     Date: August 29, 2025
-    This function is intended for use in Azure Pipelines and supports rich logging features for CI/CD automation.
+    This function is intended for use in CI/CD pipelines and supports rich logging features for automation.
 #>
 function Write-PipelineLog {
     [CmdletBinding()]
@@ -58,9 +58,18 @@ function Write-PipelineLog {
 
     $LogType = $LogType.ToLower()
     $color = 'White'
+    $pipelineType = Get-PipelineType
 
-    if ((Test-PipelineContext)) {
-        $prefix = "##[$LogType] "
+    if ($pipelineType -ne [PipelineType]::Unknown) {
+        switch ($pipelineType) {
+            ([PipelineType]::AzureDevOps) {
+                $prefix = "##[$LogType] "
+            }
+            ([PipelineType]::GitHubActions) {
+                # GitHub Actions uses different syntax
+                $prefix = ""
+            }
+        }
     }
     else {
         switch($LogType) {
@@ -75,17 +84,43 @@ function Write-PipelineLog {
     $isIssue = ($LogType -eq 'error' -or $LogType -eq 'warning')
 
     if ($DoNotUpdateJobStatus.IsPresent -or (-not $isIssue)) {
-        Write-Host "${prefix}$Message" -ForegroundColor $color
+        if ($pipelineType -eq [PipelineType]::GitHubActions -and ($LogType -eq 'debug')) {
+            Write-Host "::debug::$Message"
+        }
+        elseif ($pipelineType -eq [PipelineType]::GitHubActions -and ($LogType -eq 'info' -or $LogType -eq 'command')) {
+            Write-Host "::notice::$Message"
+        }
+        else {
+            Write-Host "${prefix}$Message" -ForegroundColor $color
+        }
         return
     }
     
-    $properties = ''
-
-    if ($SourcePath) { $properties += ";sourcepath=$SourcePath" }
-    if ($LineNumber) { $properties += ";linenumber=$LineNumber" }
-    if ($ColumnNumber) { $properties += ";columnnumber=$ColumnNumber" }
-    if ($IssueCode) { $properties += ";code=$IssueCode" }
-
     $global:_task_status = 'SucceededWithIssues'
-    Write-Host "##vso[task.logissue type=$LogType$properties]$Message"
+    
+    # Handle issues (errors and warnings) based on pipeline type
+    switch ($pipelineType) {
+        ([PipelineType]::AzureDevOps) {
+            $properties = ''
+            if ($SourcePath) { $properties += ";sourcepath=$SourcePath" }
+            if ($LineNumber) { $properties += ";linenumber=$LineNumber" }
+            if ($ColumnNumber) { $properties += ";columnnumber=$ColumnNumber" }
+            if ($IssueCode) { $properties += ";code=$IssueCode" }
+            Write-Host "##vso[task.logissue type=$LogType$properties]$Message"
+        }
+        ([PipelineType]::GitHubActions) {
+            # GitHub Actions format: ::error file={name},line={line},col={col},title={title}::{message}
+            $properties = @()
+            if ($SourcePath) { $properties += "file=$SourcePath" }
+            if ($LineNumber) { $properties += "line=$LineNumber" }
+            if ($ColumnNumber) { $properties += "col=$ColumnNumber" }
+            if ($IssueCode) { $properties += "title=$IssueCode" }
+            
+            $propertyString = if ($properties.Count -gt 0) { " $($properties -join ',')" } else { "" }
+            Write-Host "::${LogType}${propertyString}::$Message"
+        }
+        default {
+            Write-Host "${prefix}$Message" -ForegroundColor $color
+        }
+    }
 }

@@ -1,25 +1,31 @@
-# AzurePipelinesUtils
+# PipelinesUtils
 
-PowerShell utilities for Azure DevOps Pipelines tasks. This module provides cmdlets to facilitate common actions in Azure DevOps pipelines, such as logging commands, setting variables, and managing build metadata.
+PowerShell utilities for CI/CD pipelines. This module provides cmdlets to facilitate common actions in **Azure DevOps Pipelines** and **GitHub Actions**, such as logging commands, setting variables, and managing build metadata.
 
 ## Features
 
-- **Logging Commands**: Write warnings, errors, and progress updates using Azure DevOps logging commands
-- **Variable Management**: Set pipeline variables, including secrets and output variables
+- **Multi-Platform Support**: Works with both Azure DevOps Pipelines and GitHub Actions
+- **Logging Commands**: Write warnings, errors, and progress updates using platform-specific logging commands
+- **Variable Management**: Set pipeline variables and outputs using appropriate syntax for each platform
 - **Build Management**: Add tags to builds and organize output with collapsible sections
-- **Context Detection**: Detect if code is running within an Azure DevOps Pipeline
+- **Context Detection**: Automatically detect the CI/CD environment and use appropriate commands
+
+## Supported Platforms
+
+- **Azure DevOps Pipelines** - Full support for all Azure DevOps logging commands
+- **GitHub Actions** - Full support for GitHub Actions workflow commands
 
 ## Installation
 
 ### From PowerShell Gallery (when published)
 ```powershell
-Install-Module AzurePipelinesUtils -Scope CurrentUser
+Install-Module PipelinesUtils -Scope CurrentUser
 ```
 
 ### From Source
 ```powershell
-git clone https://github.com/igoravl/AzurePipelinesUtils.git
-cd AzurePipelinesUtils
+git clone https://github.com/igoravl/PipelinesUtils.git
+cd PipelinesUtils
 # Install dependencies
 Install-Module InvokeBuild, ModuleBuilder, Pester -Scope CurrentUser
 # Build the module
@@ -30,67 +36,98 @@ Invoke-Build
 
 ### Logging Commands
 
-- **`Write-AzurePipelinesWarning`** - Write warning messages to pipeline logs
-- **`Write-AzurePipelinesError`** - Write error messages to pipeline logs
-- **`Write-AzurePipelinesTaskProgress`** - Update task progress indicators
-- **`Write-AzurePipelinesSection`** - Create collapsible sections in logs
+- **`Write-PipelineWarning`** - Write warning messages to pipeline logs
+- **`Write-PipelineError`** - Write error messages to pipeline logs
+- **`Write-PipelineDebug`** - Write debug messages to pipeline logs
+- **`Write-PipelineCommand`** - Write command messages to pipeline logs
+- **`Write-PipelineTaskProgress`** - Update task progress indicators
+- **`Write-PipelineSection`** - Create sections in logs
+- **`Write-PipelineProgress`** - Report progress with percentage
+
+### Grouping Commands
+
+- **`Write-PipelineGroupStart`** - Start a collapsible group in logs
+- **`Write-PipelineGroupEnd`** - End a collapsible group in logs
 
 ### Variable Management
 
-- **`Set-AzurePipelinesVariable`** - Set pipeline variables (including secrets and output variables)
+- **`Set-PipelineVariable`** - Set pipeline variables (including secrets and output variables)
+- **`Set-PipelineSecretValue`** - Mask a value as secret in logs
 
 ### Build Management
 
-- **`Add-AzurePipelinesBuildTag`** - Add tags to the current build
+- **`Add-PipelineBuildTag`** - Add tags to the current build/run
+- **`Set-PipelineBuildNumber`** - Set the build/run number
+- **`Set-PipelineReleaseNumber`** - Set the release name
+- **`Add-PipelineSummary`** - Add Markdown summary to the pipeline run
+- **`Add-PipelinePath`** - Add a directory to the PATH environment variable
+- **`Complete-PipelineTask`** - Mark task completion with status
 
 ### Utility Functions
 
-- **`Test-AzurePipelinesContext`** (Private) - Detect Azure DevOps Pipeline context
+- **`Test-PipelineContext`** (Private) - Detect CI/CD pipeline context
+- **`Get-PipelineType`** (Private) - Get the current pipeline type (Azure DevOps or GitHub Actions)
 
 ## Examples
 
 ### Basic Logging
 ```powershell
-Write-AzurePipelinesWarning "This is a warning message"
-Write-AzurePipelinesError "This is an error message"
+Write-PipelineWarning "This is a warning message"
+Write-PipelineError "This is an error message"
+Write-PipelineDebug "This is a debug message"
 ```
 
 ### Advanced Logging with Source Information
 ```powershell
-Write-AzurePipelinesWarning -Message "Deprecated function used" -SourcePath "script.ps1" -LineNumber 42
-Write-AzurePipelinesError -Message "Compilation failed" -SourcePath "build.ps1" -LineNumber 25
+Write-PipelineWarning -Message "Deprecated function used" -SourcePath "script.ps1" -LineNumber 42
+Write-PipelineError -Message "Compilation failed" -SourcePath "build.ps1" -LineNumber 25 -IssueCode "BUILD001"
 ```
 
 ### Setting Variables
 ```powershell
-# Set a regular variable
-Set-AzurePipelinesVariable -Name "BuildNumber" -Value "1.0.42"
+# Set a regular variable (Azure DevOps) or environment variable (GitHub Actions)
+Set-PipelineVariable -Name "BuildNumber" -Value "1.0.42"
 
-# Set a secret variable
-Set-AzurePipelinesVariable -Name "ApiKey" -Value "secret123" -Secret
+# Set a secret variable (Azure DevOps only - GitHub Actions requires repository secrets)
+Set-PipelineVariable -Name "ApiKey" -Value "secret123" -Secret
 
-# Set an output variable (available to subsequent jobs)
-Set-AzurePipelinesVariable -Name "DeploymentTarget" -Value "Production" -Output
+# Set an output variable (available to subsequent jobs/steps)
+Set-PipelineVariable -Name "DeploymentTarget" -Value "Production" -Output
+
+# Mask a secret value in logs
+Set-PipelineSecretValue -Value "mySecretPassword"
 ```
 
 ### Build Management
 ```powershell
 # Add tags to the build
-Add-AzurePipelinesBuildTag -Tag "release"
-Add-AzurePipelinesBuildTag -Tag "hotfix"
+Add-PipelineBuildTag -Tag "release"
+Add-PipelineBuildTag -Tag "hotfix"
+
+# Set build number
+Set-PipelineBuildNumber -BuildNumber "1.0.42"
+
+# Add a summary (markdown)
+Add-PipelineSummary -Content "## Build Results`n- Tests Passed: 42`n- Code Coverage: 95%"
+
+# Add path to PATH environment variable
+Add-PipelinePath -Path "C:\tools\bin"
 ```
 
 ### Progress Tracking
 ```powershell
-Write-AzurePipelinesTaskProgress -CurrentOperation "Installing dependencies" -PercentComplete 25
-Write-AzurePipelinesTaskProgress -CurrentOperation "Running tests" -PercentComplete 75
+Write-PipelineTaskProgress -CurrentOperation "Installing dependencies" -PercentComplete 25
+Write-PipelineProgress -PercentComplete 75 -Activity "Running tests"
 ```
 
-### Organizing Output with Sections
+### Organizing Output with Groups
 ```powershell
-Write-AzurePipelinesSection -Name "Build" -Start
+Write-PipelineGroupStart "Build Phase"
 # ... build commands ...
-Write-AzurePipelinesSection -Name "Build" -End
+Write-PipelineGroupEnd
+
+# Or create sections
+Write-PipelineSection -Text "Deployment" -Boxed
 ```
 
 ## Development
@@ -116,11 +153,12 @@ Invoke-Build Pack
 ### Project Structure
 
 ```
-AzurePipelinesUtils/
+PipelinesUtils/
 ├── Source/                    # Source files (ModuleBuilder convention)
 │   ├── Public/               # Public functions (exported)
 │   ├── Private/              # Private functions (internal)
-│   ├── AzurePipelinesUtils.psd1  # Module manifest
+│   ├── Enum/                 # Enums (PipelineType)
+│   ├── PipelinesUtils.psd1   # Module manifest
 │   └── build.psd1            # ModuleBuilder configuration
 ├── Tests/                    # Pester tests
 ├── Build/                    # Build output (created by ModuleBuilder)
@@ -140,9 +178,25 @@ AzurePipelinesUtils/
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Platform-Specific Behavior
+
+### Azure DevOps
+- Uses `##vso[...]` logging commands
+- Supports all advanced features like task completion status, progress tracking
+- Variables set with `-Secret` flag are masked in logs
+- Build tags are applied directly to the build
+
+### GitHub Actions
+- Uses `::command::` workflow commands
+- Environment variables are written to `$env:GITHUB_ENV`
+- Output variables are written to `$env:GITHUB_OUTPUT`
+- Secrets must be configured in repository settings
+- Summaries are written to `$env:GITHUB_STEP_SUMMARY`
+- Groups use `::group::` and `::endgroup::`
+
 ## References
 
 - [Azure DevOps Logging Commands](https://docs.microsoft.com/en-us/azure/devops/pipelines/scripts/logging-commands)
+- [GitHub Actions Workflow Commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions)
 - [ModuleBuilder](https://github.com/PoshCode/ModuleBuilder)
 - [Invoke-Build](https://github.com/nightroman/Invoke-Build)
-Collection of PowerShell cmdlets for use in Azure Pipelines
