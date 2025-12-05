@@ -126,7 +126,7 @@ task Publish Build, {
     }
     
     # Get the module path
-    $modulePath = Join-Path $PSScriptRoot "out/module/$ModuleName"
+    $modulePath = Join-Path $PSScriptRoot "Build/$ModuleName"
 
     # Publish the module
     Write-Host "Publishing module version $BuildNumber to PowerShell Gallery..."
