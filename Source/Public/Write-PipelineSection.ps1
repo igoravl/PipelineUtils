@@ -1,10 +1,10 @@
 
 <#
 .SYNOPSIS
-Writes a section header to the Azure Pipelines log output.
+Writes a section header to the CI/CD pipeline log output.
 
 .DESCRIPTION
-This function emits a formatted section header in the Azure Pipelines log, optionally boxed, using the special logging command for sections. It is useful for visually grouping related log output in pipeline runs.
+This function emits a formatted section header in the pipeline log, optionally boxed, using the appropriate logging command for the detected pipeline. It is useful for visually grouping related log output in pipeline runs.
 
 .EXAMPLE
 Write-PipelineSection -Text "Build started"
@@ -15,7 +15,7 @@ Write-PipelineSection -Text "Tests" -Boxed
 Writes a boxed section header labeled "Tests" to the pipeline log.
 
 .NOTES
-Requires execution within an Azure Pipelines agent environment to have effect in the log output.
+Requires execution within a supported CI/CD pipeline environment (Azure DevOps or GitHub Actions).
 #>
 Function Write-PipelineSection {
     [CmdletBinding()]
@@ -31,9 +31,18 @@ Function Write-PipelineSection {
 
     $msg = "== $Text =="
     $box = "`n"
+    $pipelineType = Get-PipelineType
 
-    if ((Test-PipelineContext)) {
-        $prefix = '##[section]'
+    if ($pipelineType -ne [PipelineType]::Unknown) {
+        switch ($pipelineType) {
+            ([PipelineType]::AzureDevOps) {
+                $prefix = '##[section]'
+            }
+            ([PipelineType]::GitHubActions) {
+                # GitHub Actions doesn't have a specific section command, use notice
+                $prefix = ''
+            }
+        }
     }
 
     if ($Boxed) {

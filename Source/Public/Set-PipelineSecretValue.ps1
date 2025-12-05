@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-Marks a value as secret in Azure DevOps Pipelines.
+Marks a value as secret in CI/CD pipelines.
 
 .DESCRIPTION
-This function marks a value as secret using Azure DevOps Pipelines logging commands.
+This function marks a value as secret using Azure DevOps or GitHub Actions logging commands.
 Secret values are masked in the pipeline logs to prevent sensitive information from being exposed.
 
 .PARAMETER Value
@@ -26,10 +26,17 @@ function Set-PipelineSecretValue {
         [string]$Value
     )
 
-    if ((Test-PipelineContext)) {
-        Write-Output "##vso[task.setsecret]$Value"
-    }
-    else {
-        Write-Output "Secret value has been masked in logs: ********"
+    $pipelineType = Get-PipelineType
+    
+    switch ($pipelineType) {
+        ([PipelineType]::AzureDevOps) {
+            Write-Output "##vso[task.setsecret]$Value"
+        }
+        ([PipelineType]::GitHubActions) {
+            Write-Output "::add-mask::$Value"
+        }
+        default {
+            Write-Output "Secret value has been masked in logs: ********"
+        }
     }
 }

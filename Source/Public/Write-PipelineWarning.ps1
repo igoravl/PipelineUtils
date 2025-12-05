@@ -44,25 +44,8 @@ function Write-PipelineWarning {
         [switch] $DoNotUpdateJobStatus
     )
     
-    if ((Test-PipelineContext)) {
-        $prefix = '##[warning] ' 
-    }
-    
-    if ($DoNotUpdateJobStatus.IsPresent) {
-        Write-Host "${prefix}$Message" -ForegroundColor Yellow
-        return
-    }
-    
-    $properties = ''
-
-    if ($SourcePath) { $properties += ";sourcepath=$SourcePath" }
-    if ($LineNumber) { $properties += ";linenumber=$LineNumber" }
-    if ($ColumnNumber) { $properties += ";columnnumber=$ColumnNumber" }
-    if ($IssueCode) { $properties += ";code=$IssueCode" }
-
-    $global:_task_status = 'SucceededWithIssues'
-    Write-Host "##vso[task.logissue type=warning$properties]$Message"
+    Write-PipelineLog -Message $Message -LogType 'Warning' -SourcePath $SourcePath -LineNumber $LineNumber -ColumnNumber $ColumnNumber -IssueCode $IssueCode -DoNotUpdateJobStatus:$DoNotUpdateJobStatus
 }
 
 # Alias
-Set-Alias -Name 'Write-Warning' -Value 'Write-PipelineWarning' -Force -Scope Global
+# Set-Alias -Name 'Write-Warning' -Value 'Write-PipelineWarning' -Force -Scope Global

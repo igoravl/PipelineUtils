@@ -4,7 +4,10 @@
         [string] $Status = 'Succeeded'
     )
 
-    if(-not (Test-PipelineContext)) {
+    $pipelineType = Get-PipelineType
+    
+    if($pipelineType -ne [PipelineType]::AzureDevOps) {
+        Write-Warning "Complete-PipelineTask is only supported in Azure DevOps pipelines."
         return
     }
 

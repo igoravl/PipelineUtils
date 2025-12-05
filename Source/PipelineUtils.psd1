@@ -1,11 +1,11 @@
 @{
-    RootModule = 'AzurePipelinesUtils.psm1'
-    ModuleVersion = '0.1.0'
+    RootModule = 'PipelineUtils.psm1'
+    ModuleVersion = '0.2.0'
     GUID = 'a1234567-b890-c123-d456-e789f0123456'
     Author = 'igoravl'
     CompanyName = 'igoravl'
     Copyright = '(c) 2025 igoravl. All rights reserved.'
-    Description = 'PowerShell utilities for Azure DevOps Pipelines tasks'
+    Description = 'PowerShell utilities for CI/CD pipelines (Azure DevOps and GitHub Actions)'
     PowerShellVersion = '5.1'
     RequiredModules = @()
     RequiredAssemblies = @()
@@ -22,16 +22,16 @@
     FileList = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Azure', 'DevOps', 'Pipelines', 'Build', 'Automation')
-            LicenseUri = 'https://github.com/igoravl/AzurePipelinesUtils/blob/main/LICENSE'
-            ProjectUri = 'https://github.com/igoravl/AzurePipelinesUtils'
+            Tags = @('Azure', 'DevOps', 'Pipelines', 'GitHub', 'Actions', 'CI', 'CD', 'Build', 'Automation')
+            LicenseUri = 'https://github.com/igoravl/PipelineUtils/blob/main/LICENSE'
+            ProjectUri = 'https://github.com/igoravl/PipelineUtils'
             IconUri = ''
             Prerelease = ''
-            ReleaseNotes = 'Initial release of AzurePipelinesUtils PowerShell module'
+            ReleaseNotes = 'Version 0.2.0: Added support for GitHub Actions alongside Azure DevOps Pipelines'
             RequireLicenseAcceptance = $false
             ExternalModuleDependencies = @()
         }
     }
-    HelpInfoURI = 'https://github.com/igoravl/AzurePipelinesUtils'
+    HelpInfoURI = 'https://github.com/igoravl/PipelineUtils'
     DefaultCommandPrefix = ''
 }

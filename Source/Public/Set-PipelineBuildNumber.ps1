@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-Sets the build number in Azure DevOps Pipelines.
+Sets the build/run number in CI/CD pipelines.
 
 .DESCRIPTION
-This function sets the build number using Azure DevOps Pipelines logging commands.
-The build number can be modified during a pipeline run to provide custom versioning.
+This function sets the build number in Azure DevOps. GitHub Actions does not support
+changing the run name during execution; in that environment the function emits a warning.
 
 .PARAMETER BuildNumber
-The build number to set for the current pipeline run.
+The build number/run name to set for the current pipeline run.
 
 .EXAMPLE
 Set-PipelineBuildNumber -BuildNumber "1.0.42"
@@ -25,12 +25,18 @@ function Set-PipelineBuildNumber {
         [string]$BuildNumber
     )
 
-    if ((Test-PipelineContext)) {
-        $prefix = '##vso[build.updatebuildnumber]'
+    $pipelineType = Get-PipelineType
+    
+    switch ($pipelineType) {
+        ([PipelineType]::AzureDevOps) {
+            Write-Output "##vso[build.updatebuildnumber]$BuildNumber"
+        }
+        ([PipelineType]::GitHubActions) {
+            Write-Warning "Set-PipelineBuildNumber is only supported in Azure DevOps pipelines."
+            return
+        }
+        default {
+            Write-Output "Build number: $BuildNumber"
+        }
     }
-    else {
-        $prefix = 'Build number: '
-    }
-
-    Write-Output "$prefix$BuildNumber"
 }
