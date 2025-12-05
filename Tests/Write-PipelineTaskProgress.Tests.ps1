@@ -15,12 +15,12 @@ Describe 'Write-PipelineTaskProgress' {
 
         It 'writes task progress with Azure DevOps format' {
             $output = Write-PipelineTaskProgress -CurrentOperation "Installing dependencies"
-            $output | Should -Be "##vso[task.setprogress currentoperation=Installing dependencies]"
+            $output | Should -Be "##vso[task.setprogress value=0;]Installing dependencies"
         }
 
         It 'includes percentage when provided' {
             $output = Write-PipelineTaskProgress -CurrentOperation "Running tests" -PercentComplete 75
-            $output | Should -Be "##vso[task.setprogress currentoperation=Running tests;percentcomplete=75]"
+            $output | Should -Be "##vso[task.setprogress value=75;]Running tests"
         }
 
         It 'validates percent complete range' {
@@ -30,12 +30,12 @@ Describe 'Write-PipelineTaskProgress' {
 
         It 'accepts 0 percent' {
             $output = Write-PipelineTaskProgress -CurrentOperation "Starting" -PercentComplete 0
-            $output | Should -Be "##vso[task.setprogress currentoperation=Starting;percentcomplete=0]"
+            $output | Should -Be "##vso[task.setprogress value=0;]Starting"
         }
 
         It 'accepts 100 percent' {
             $output = Write-PipelineTaskProgress -CurrentOperation "Complete" -PercentComplete 100
-            $output | Should -Be "##vso[task.setprogress currentoperation=Complete;percentcomplete=100]"
+            $output | Should -Be "##vso[task.setprogress value=100;]Complete"
         }
     }
 

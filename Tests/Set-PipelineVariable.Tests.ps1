@@ -10,27 +10,27 @@ Describe 'Set-PipelineVariable' {
         
         It 'sets a variable with Azure DevOps format' {
             $output = Set-PipelineVariable -Name 'TestVar' -Value 'TestValue' 6>&1
-            $output | Should -Be '##vso[task.setvariable variable=TestVar]TestValue'
+            $output | Should -Be '##vso[task.setvariable variable=TestVar;]TestValue'
         }
         
         It 'sets a secret variable when Secret switch is used' {
             $output = Set-PipelineVariable -Name 'SecretVar' -Value 'SecretValue' -Secret 6>&1
-            $output | Should -Be '##vso[task.setvariable variable=SecretVar;issecret=true]SecretValue'
+            $output | Should -Be '##vso[task.setvariable variable=SecretVar;issecret=true;]SecretValue'
         }
         
         It 'sets an output variable when Output switch is used' {
             $output = Set-PipelineVariable -Name 'OutputVar' -Value 'OutputValue' -Output 6>&1
-            $output | Should -Be '##vso[task.setvariable variable=OutputVar;isoutput=true]OutputValue'
+            $output | Should -Be '##vso[task.setvariable variable=OutputVar;isoutput=true;]OutputValue'
         }
 
         It 'sets a readonly variable when ReadOnly switch is used' {
             $output = Set-PipelineVariable -Name 'ReadOnlyVar' -Value 'ReadOnlyValue' -ReadOnly 6>&1
-            $output | Should -Be '##vso[task.setvariable variable=ReadOnlyVar;isreadonly=true]ReadOnlyValue'
+            $output | Should -Be '##vso[task.setvariable variable=ReadOnlyVar;isreadonly=true;]ReadOnlyValue'
         }
 
         It 'sets a variable with multiple flags' {
             $output = Set-PipelineVariable -Name 'ComplexVar' -Value 'ComplexValue' -Secret -Output 6>&1
-            $output | Should -Be '##vso[task.setvariable variable=ComplexVar;issecret=true;isoutput=true]ComplexValue'
+            $output | Should -Be '##vso[task.setvariable variable=ComplexVar;issecret=true;isoutput=true;]ComplexValue'
         }
     }
     

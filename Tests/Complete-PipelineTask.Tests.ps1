@@ -53,25 +53,33 @@ Describe 'Complete-PipelineTask' {
         }
 
         It 'shows warning and returns early when not in Azure DevOps' {
-            $output = Complete-PipelineTask -Status 'Succeeded' 3>&1
-            $output | Should -Match 'Complete-PipelineTask is only supported in Azure DevOps pipelines'
+            $warn = $null
+            $output = Complete-PipelineTask -Status 'Succeeded' -WarningVariable warn -WarningAction SilentlyContinue
+            $warn | Should -BeLike '*Complete-PipelineTask is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
         }
 
         It 'shows warning for SucceededWithIssues status' {
-            $output = Complete-PipelineTask -Status 'SucceededWithIssues' 3>&1
-            $output | Should -Match 'Complete-PipelineTask is only supported in Azure DevOps pipelines'
+            $warn = $null
+            $output = Complete-PipelineTask -Status 'SucceededWithIssues' -WarningVariable warn -WarningAction SilentlyContinue
+            $warn | Should -BeLike '*Complete-PipelineTask is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
         }
 
         It 'shows warning for Failed status' {
-            $output = Complete-PipelineTask -Status 'Failed' 3>&1
-            $output | Should -Match 'Complete-PipelineTask is only supported in Azure DevOps pipelines'
+            $warn = $null
+            $output = Complete-PipelineTask -Status 'Failed' -WarningVariable warn -WarningAction SilentlyContinue
+            $warn | Should -BeLike '*Complete-PipelineTask is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
         }
 
         It 'shows warning even when global task status is set' {
             $Global:_task_status = 'SucceededWithIssues'
             try {
-                $output = Complete-PipelineTask -Status 'Succeeded' 3>&1
-                $output | Should -Match 'Complete-PipelineTask is only supported in Azure DevOps pipelines'
+                $warn = $null
+                $output = Complete-PipelineTask -Status 'Succeeded' -WarningVariable warn -WarningAction SilentlyContinue
+                $warn | Should -BeLike '*Complete-PipelineTask is only supported in Azure DevOps pipelines.*'
+                $output | Should -BeNullOrEmpty
             }
             finally {
                 $Global:_task_status = 'Succeeded'
@@ -81,12 +89,14 @@ Describe 'Complete-PipelineTask' {
 
     Context 'Console' {
         It 'returns nothing when not in a pipeline context' {
-            $output = Complete-PipelineTask -Status 'Succeeded'
+            $warn = $null
+            $output = Complete-PipelineTask -Status 'Succeeded' -WarningVariable warn -WarningAction SilentlyContinue
             $output | Should -BeNullOrEmpty
         }
 
         It 'returns nothing for any status when not in a pipeline context' {
-            $output = Complete-PipelineTask -Status 'Failed'
+            $warn = $null
+            $output = Complete-PipelineTask -Status 'Failed' -WarningVariable warn -WarningAction SilentlyContinue
             $output | Should -BeNullOrEmpty
         }
     }

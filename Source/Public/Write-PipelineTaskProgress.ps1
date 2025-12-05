@@ -33,11 +33,12 @@ function Write-PipelineTaskProgress {
     
     switch ($pipelineType) {
         ([PipelineType]::AzureDevOps) {
-            $properties = "currentoperation=$CurrentOperation"
             if ($PSBoundParameters.ContainsKey('PercentComplete')) {
-                $properties += ";percentcomplete=$PercentComplete"
+                Write-Output "##vso[task.setprogress value=$PercentComplete;]$CurrentOperation"
             }
-            Write-Output "##vso[task.setprogress $properties]"
+            else {
+                Write-Output "##vso[task.setprogress value=0;]$CurrentOperation"
+            }
         }
         ([PipelineType]::GitHubActions) {
             # GitHub Actions doesn't have native task progress, use notice

@@ -20,12 +20,14 @@ Describe 'Add-PipelineBuildTag' {
             _SetGitHubActionsEnvironment
         }
         
-        It 'adds a build tag as a notice and output' {
-            $output = Add-PipelineBuildTag -Tag 'release' 6>&1
-            $output | Should -Be '::notice title=Build Tag::release'
-            
-            $content = Get-Content $env:GITHUB_OUTPUT -Raw
-            $content | Should -BeLike '*build-tag=release*'
+        It 'warns and returns early when unsupported' {
+            $warn = $null
+            $output = Add-PipelineBuildTag -Tag 'release' -WarningVariable warn -WarningAction SilentlyContinue
+            $warn | Should -BeLike '*Add-PipelineBuildTag is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
+
+            $content = if (Test-Path $env:GITHUB_OUTPUT) { Get-Content $env:GITHUB_OUTPUT -Raw } else { '' }
+            $content | Should -Not -BeLike '*build-tag=*'
         }
     }
     

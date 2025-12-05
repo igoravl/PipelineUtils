@@ -14,22 +14,22 @@ InModuleScope -ModuleName 'PipelineUtils' {
         
             It 'includes column number for errors' {
                 $output = Write-PipelineLog -Message 'Test error' -LogType Error -SourcePath 'test.ps1' -LineNumber 10 -ColumnNumber 5 6>&1
-                $output | Should -Be '##vso[task.logissue type=error;sourcepath=test.ps1;linenumber=10;columnnumber=5]Test error'
+                $output | Should -Be '##vso[task.logissue type=error;sourcepath=test.ps1;linenumber=10;columnnumber=5;]Test error'
             }
         
             It 'includes issue code for errors' {
                 $output = Write-PipelineLog -Message 'Test error' -LogType Error -IssueCode 'ERR001' 6>&1
-                $output | Should -Be '##vso[task.logissue type=error;code=ERR001]Test error'
+                $output | Should -Be '##vso[task.logissue type=error;code=ERR001;]Test error'
             }
         
             It 'includes all metadata parameters for warnings' {
                 $output = Write-PipelineLog -Message 'Test warning' -LogType Warning -SourcePath 'test.ps1' -LineNumber 10 -ColumnNumber 5 -IssueCode 'WARN001' 6>&1
-                $output | Should -Be '##vso[task.logissue type=warning;sourcepath=test.ps1;linenumber=10;columnnumber=5;code=WARN001]Test warning'
+                $output | Should -Be '##vso[task.logissue type=warning;sourcepath=test.ps1;linenumber=10;columnnumber=5;code=WARN001;]Test warning'
             }
         
             It 'writes info messages with correct format' {
                 $output = Write-PipelineLog -Message 'Test info' -LogType Info 6>&1
-                $output | Should -Be '##[info]Test info'
+                $output | Should -Be 'Test info'
             }
         
             It 'writes debug messages with correct format' {
@@ -95,7 +95,7 @@ InModuleScope -ModuleName 'PipelineUtils' {
         
             It 'writes command messages with correct format' {
                 $output = Write-PipelineLog -Message 'Test command' -LogType Command 6>&1
-                $output | Should -Be '##[command]Test command'
+                $output | Should -Be '::notice title=command::Test command'
             }
         }
     

@@ -20,12 +20,14 @@ Describe 'Set-PipelineBuildNumber' {
             _SetGitHubActionsEnvironment
         }
         
-        It 'sets build number as notice and environment variable' {
-            $output = Set-PipelineBuildNumber -BuildNumber '1.0.42' 6>&1
-            $output | Should -Be '::notice title=Build Number::1.0.42'
-            
-            $content = Get-Content $env:GITHUB_ENV -Raw
-            $content | Should -BeLike '*BUILD_NUMBER=1.0.42*'
+        It 'warns and returns early when unsupported' {
+            $warn = $null
+            $output = Set-PipelineBuildNumber -BuildNumber '1.0.42' -WarningVariable warn -WarningAction SilentlyContinue
+            $warn | Should -BeLike '*Set-PipelineBuildNumber is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
+
+            $content = if (Test-Path $env:GITHUB_ENV) { Get-Content $env:GITHUB_ENV -Raw } else { '' }
+            $content | Should -Not -BeLike '*BUILD_NUMBER=*'
         }
     }
     

@@ -61,8 +61,10 @@ Describe 'Add-PipelineTaskLogFile' {
         }
 
         It 'shows warning and returns early when not in Azure DevOps' {
-            $output = Add-PipelineTaskLogFile -Path $script:testFile.FullName 3>&1
-            $output | Should -Match 'Add-PipelineTaskLogFile is only supported in Azure DevOps pipelines'
+            $warn = $null
+            $output = Add-PipelineTaskLogFile -Path $script:testFile.FullName -WarningVariable warn -WarningAction SilentlyContinue
+            $warn | Should -BeLike '*Add-PipelineTaskLogFile is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
         }
     }
 
@@ -79,8 +81,10 @@ Describe 'Add-PipelineTaskLogFile' {
         }
 
         It 'shows warning and returns early when not in Azure DevOps' {
-            $output = Add-PipelineTaskLogFile -Path $script:testFile.FullName 3>&1
-            $output | Should -Match 'Add-PipelineTaskLogFile is only supported in Azure DevOps pipelines'
+            $warn = $null
+            $output = Add-PipelineTaskLogFile -Path $script:testFile.FullName -WarningVariable warn -WarningAction SilentlyContinue
+            $warn | Should -BeLike '*Add-PipelineTaskLogFile is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
         }
     }
 }

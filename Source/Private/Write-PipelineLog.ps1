@@ -75,28 +75,30 @@ function Write-PipelineLog {
 
     switch ($pipelineType) {
         ([PipelineType]::AzureDevOps) {
-            $prefix = "##[$LogType"
-            $suffix = "]"
+            switch ($LogType) {
+                'error'   { $prefix = '##vso[task.logissue type=error'; $suffix = ';]'; $useVso = $true }
+                'warning' { $prefix = '##vso[task.logissue type=warning'; $suffix = ';]'; $useVso = $true }
+                'debug'   { $prefix = '##[debug]'; $suffix = '' }
+                'command' { $prefix = '##[command]'; $suffix = '' }
+                'info'    { $prefix = ''; $suffix = '' } # no official info command
+            }
         }
         ([PipelineType]::GitHubActions) {
-            $prefix = "::${LogType}"
-            $suffix = "::"
             switch ($LogType) {
-                "info" { $prefix = '::notice' }
-                "command" { 
-                    $prefix = '##[command'
-                    $suffix = ']'
-                }
+                'error'   { $prefix = '::error'; $suffix = '::'; $ghaSupportsProps = $true }
+                'warning' { $prefix = '::warning'; $suffix = '::'; $ghaSupportsProps = $true }
+                'info'    { $prefix = '::notice'; $suffix = '::'; $ghaSupportsProps = $true }
+                'debug'   { $prefix = '::debug::'; $suffix = '' }
+                'command' { $prefix = '::notice title=command::'; $suffix = '' }
             }
         }
         else {
             switch ($LogType) {
-                "error" { $color = 'Red' }
-                "warning" { $color = 'Yellow' }
-                "info" { $color = 'LightGray' }
-                "debug" { $color = 'DarkGray' }
-                "command" { $color = 'Cyan' }
-                else { $color = 'White' }
+                'error'   { $color = 'Red' }
+                'warning' { $color = 'Yellow' }
+                'info'    { $color = 'LightGray' }
+                'debug'   { $color = 'DarkGray' }
+                'command' { $color = 'Cyan' }
             }
         }
     }
@@ -107,32 +109,32 @@ function Write-PipelineLog {
         $global:_task_status = 'SucceededWithIssues'
     }
 
-    # Handle issues (errors and warnings) based on pipeline type
+    if ($pipelineType -eq [PipelineType]::AzureDevOps -and $useVso) {
+        $properties = ''
+        if ($SourcePath) { $properties += ";sourcepath=$SourcePath" }
+        if ($LineNumber) { $properties += ";linenumber=$LineNumber" }
+        if ($ColumnNumber) { $properties += ";columnnumber=$ColumnNumber" }
+        if ($IssueCode) { $properties += ";code=$IssueCode" }
 
-    switch ($pipelineType) {
-        ([PipelineType]::AzureDevOps) {
-            if ($isIssue) {
-                $properties = ''
-                if ($SourcePath) { $properties += ";sourcepath=$SourcePath" }
-                if ($LineNumber) { $properties += ";linenumber=$LineNumber" }
-                if ($ColumnNumber) { $properties += ";columnnumber=$ColumnNumber" }
-                if ($IssueCode) { $properties += ";code=$IssueCode" }
-                $prefix = "##vso[task.logissue type=${LogType}"
-            }
-        }
-        ([PipelineType]::GitHubActions) {
-            # GitHub Actions format: ::error file={name},line={line},col={col},title={title}::{message}
-            $props = [System.Collections.Generic.List[string]]::new()
-            if ($SourcePath) { $props.Add("file=$SourcePath") }
-            if ($LineNumber) { $props.Add("line=$LineNumber") }
-            if ($EndLineNumber) { $props.Add("endLine=$EndLineNumber") }
-            if ($ColumnNumber) { $props.Add("col=$ColumnNumber") }
-            if ($EndColumnNumber) { $props.Add("endColumn=$EndColumnNumber") }
-            if ($IssueTitle) { $props.Add("title=$IssueTitle$(if ($IssueCode) { " (code $IssueCode)" })") }
-            elseif ($IssueCode) { $props.Add("title=$IssueCode") }
-            $properties = if ($props.Count -gt 0) { " $($props -join ',')" } else { "" }
-        }
+        Write-Host "${prefix}${properties}${suffix}$Message"
+        return
     }
 
-    Write-Host "${prefix}${properties}${suffix}${Message}" -ForegroundColor $color
+    if ($pipelineType -eq [PipelineType]::GitHubActions -and $ghaSupportsProps) {
+        # GitHub Actions supports properties only for error/warning/notice
+        $props = [System.Collections.Generic.List[string]]::new()
+        if ($SourcePath) { $props.Add("file=$SourcePath") }
+        if ($LineNumber) { $props.Add("line=$LineNumber") }
+        if ($EndLineNumber) { $props.Add("endLine=$EndLineNumber") }
+        if ($ColumnNumber) { $props.Add("col=$ColumnNumber") }
+        if ($EndColumnNumber) { $props.Add("endColumn=$EndColumnNumber") }
+        if ($IssueTitle) { $props.Add("title=$IssueTitle$(if ($IssueCode) { " (code $IssueCode)" })") }
+        elseif ($IssueCode) { $props.Add("title=$IssueCode") }
+        $properties = if ($props.Count -gt 0) { " $($props -join ',')" } else { '' }
+
+        Write-Host "${prefix}${properties}${suffix}$Message"
+        return
+    }
+
+    Write-Host "${prefix}${Message}${suffix}" -ForegroundColor $color
 }

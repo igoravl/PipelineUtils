@@ -4,9 +4,9 @@ function Add-PipelineBuildTag {
     Adds a tag to the current pipeline build/run.
     
     .DESCRIPTION
-    This function adds a tag to the current build in Azure DevOps or GitHub Actions.
-    Tags can be used to categorize and filter builds/runs.
-    Note: In GitHub Actions, this sets an output variable as tags are not directly supported.
+    This function adds a tag to the current build in Azure DevOps. GitHub Actions does not
+    support adding build/run tags via workflow commands; in that environment the function
+    emits a warning and returns.
     
     .PARAMETER Tag
     The tag to add to the build.
@@ -30,13 +30,8 @@ function Add-PipelineBuildTag {
             Write-Output "##vso[build.addbuildtag]$Tag"
         }
         ([PipelineType]::GitHubActions) {
-            # GitHub Actions doesn't have direct tag support, but we can use labels via API
-            # For now, we'll just output it as a notice
-            Write-Output "::notice title=Build Tag::$Tag"
-            # Store in output for potential API usage
-            if ($env:GITHUB_OUTPUT) {
-                Add-Content -Path $env:GITHUB_OUTPUT -Value "build-tag=$Tag"
-            }
+            Write-Warning "Add-PipelineBuildTag is only supported in Azure DevOps pipelines."
+            return
         }
         default {
             Write-Output "Build tag: $Tag"

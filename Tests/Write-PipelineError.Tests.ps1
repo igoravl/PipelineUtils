@@ -10,12 +10,12 @@ Describe 'Write-PipelineError' {
         
         It 'writes an error with Azure DevOps format' {
             $output = Write-PipelineError -Message 'Test error' 6>&1
-            $output | Should -Be '##vso[task.logissue type=error]Test error'
+            $output | Should -Be '##vso[task.logissue type=error;]Test error'
         }
         
         It 'includes source path when provided' {
             $output = Write-PipelineError -Message 'Test error' -SourcePath 'test.ps1' 6>&1
-            $output | Should -Be '##vso[task.logissue type=error;sourcepath=test.ps1]Test error'
+            $output | Should -Be '##vso[task.logissue type=error;sourcepath=test.ps1;]Test error'
         }
     }
     

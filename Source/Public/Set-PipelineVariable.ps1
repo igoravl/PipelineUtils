@@ -52,17 +52,13 @@ function Set-PipelineVariable {
     
     switch ($pipelineType) {
         ([PipelineType]::AzureDevOps) {
-            $properties = ''
+            $propList = @()
 
-            if ($Secret) {
-                $properties += ";issecret=true"
-            }
-            if ($Output) {
-                $properties += ";isoutput=true"
-            }
-            if ($ReadOnly) {
-                $properties += ";isreadonly=true"
-            }
+            if ($Secret) { $propList += 'issecret=true' }
+            if ($Output) { $propList += 'isoutput=true' }
+            if ($ReadOnly) { $propList += 'isreadonly=true' }
+
+            $properties = if ($propList.Count -gt 0) { ';' + ($propList -join ';') + ';' } else { ';' }
 
             Write-Output "##vso[task.setvariable variable=$Name$properties]$Value"
         }

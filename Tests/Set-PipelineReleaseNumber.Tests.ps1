@@ -36,15 +36,19 @@ Describe 'Set-PipelineReleaseNumber' {
         }
 
         It 'shows warning and returns early when not in Azure DevOps' {
-            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42" 3>&1
-            $output | Should -Match 'Set-PipelineReleaseNumber is only supported in Azure DevOps pipelines'
+            $warn = $null
+            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42" -WarningVariable warn -WarningAction SilentlyContinue
+                $warn | Should -BeLike '*Set-PipelineReleaseNumber is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
         }
     }
 
     Context 'Console' {
         It 'shows warning and returns early when not in Azure DevOps' {
-            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42" 3>&1
-            $output | Should -Match 'Set-PipelineReleaseNumber is only supported in Azure DevOps pipelines'
+            $warn = $null
+            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42" -WarningVariable warn -WarningAction SilentlyContinue
+                $warn | Should -BeLike '*Set-PipelineReleaseNumber is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
         }
     }
 }

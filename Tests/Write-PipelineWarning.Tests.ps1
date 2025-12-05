@@ -10,22 +10,22 @@ Describe 'Write-PipelineWarning' {
         
         It 'writes a warning with Azure DevOps format' {
             $output = Write-PipelineWarning -Message 'Test warning' 6>&1
-            $output | Should -Be '##vso[task.logissue type=warning]Test warning'
+            $output | Should -Be '##vso[task.logissue type=warning;]Test warning'
         }
         
         It 'includes source path when provided' {
             $output = Write-PipelineWarning -Message 'Test warning' -SourcePath 'test.ps1' 6>&1
-            $output | Should -Be '##vso[task.logissue type=warning;sourcepath=test.ps1]Test warning'
+            $output | Should -Be '##vso[task.logissue type=warning;sourcepath=test.ps1;]Test warning'
         }
         
         It 'includes line number when provided' {
             $output = Write-PipelineWarning -Message 'Test warning' -LineNumber 42 6>&1
-            $output | Should -Be '##vso[task.logissue type=warning;linenumber=42]Test warning'
+            $output | Should -Be '##vso[task.logissue type=warning;linenumber=42;]Test warning'
         }
         
         It 'includes source path and line number when provided' {
             $output = Write-PipelineWarning -Message 'Test warning' -SourcePath 'test.ps1' -LineNumber 42 6>&1
-            $output | Should -Be '##vso[task.logissue type=warning;sourcepath=test.ps1;linenumber=42]Test warning'
+            $output | Should -Be '##vso[task.logissue type=warning;sourcepath=test.ps1;linenumber=42;]Test warning'
         }
     }
     
