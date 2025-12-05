@@ -102,10 +102,10 @@ task Test Build, {
 # Synopsis: Create distribution package
 task Package Build, {
     Write-Host 'Packing module into zip...'
-    $out = Join-Path $PSScriptRoot 'out/portable'
+    $out = Join-Path $PSScriptRoot 'Build/portable'
     if (-not (Test-Path $out)) { New-Item -ItemType Directory -Path $out | Out-Null }
     
-    $buildPath = Join-Path $PSScriptRoot 'out/module'
+    $buildPath = Join-Path $PSScriptRoot 'Build/PipelineUtils'
     $zip = Join-Path $out "$ModuleName-$BuildNumber.zip"
 
     if (Test-Path $zip) { Remove-Item $zip }
