@@ -177,11 +177,11 @@ jobs:
           Install-Module PackageManagement -Scope CurrentUser -Force
           Install-Module PowerShellGet -Scope CurrentUser -Force
           New-Item -ItemType Directory -Path 'Module/${{ env.ModuleName }}' -Force
-          Expand-Archive -Path (Get-ChildItem '${{ env.ModuleName }}*.zip') -DestinationPath Module
+          Expand-Archive -Path (Get-ChildItem '${{ env.ModuleName }}*.zip') -DestinationPath Module/${{ env.ModuleName }}
           $releaseNotes = $env:RELEASE_NOTES
           Write-Host "Release Notes: $releaseNotes"
           Write-Host "Publishing module..."
           Get-ChildItem -Recurse
-          Publish-Module -Name "Module/${{ env.ModuleName }}" -NuGetApiKey $env:PSGALLERY_KEY -AllowPreRelease -ReleaseNotes $releaseNotes
+          Publish-Module -Path "Module/${{ env.ModuleName }}" -NuGetApiKey $env:PSGALLERY_KEY -AllowPreRelease -ReleaseNotes $releaseNotes
 
 
