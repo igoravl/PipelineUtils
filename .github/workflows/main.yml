@@ -60,12 +60,35 @@ jobs:
         id: extract_release_notes
         shell: pwsh
         run: |
-          $fileName = (Get-ChildItem 'docs/ReleaseNotes/*.md' | Sort-Object Name -Descending | Select -ExpandProperty FullName -First 1)
-          Write-Output $fileName
-          $releaseNotes = (Get-Content $fileName -Encoding UTF8 | Select-Object -Skip 4)
-          Write-Output $releaseNotes
+          $releaseNotes = ''
+
+          # Prefer the PR description when available (pull_request events)
+          if ($env:GITHUB_EVENT_NAME -eq 'pull_request') {
+            $pr = Get-Content $env:GITHUB_EVENT_PATH | ConvertFrom-Json
+            $releaseNotes = $pr.pull_request.body
+          }
+
+          # For push events (e.g., after merge), fetch the PR associated with the commit
+          if (-not $releaseNotes) {
+            $headers = @{
+              Authorization = "Bearer $($env:GITHUB_TOKEN)"
+              Accept = 'application/vnd.github+json'
+              'X-GitHub-Api-Version' = '2022-11-28'
+            }
+            $commitSha = '${{ github.sha }}'
+            $url = "https://api.github.com/repos/igoravl/${{ env.ModuleName }}/commits/$commitSha/pulls"
+            $prs = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
+            if ($prs -and $prs.Count -gt 0) {
+              $releaseNotes = $prs[0].body
+            }
+          }
+
+          if (-not $releaseNotes) {
+            $releaseNotes = 'No release notes provided.'
+          }
+
           Write-Output 'RELEASE_NOTES<<EOF' >> $env:GITHUB_OUTPUT
-          Write-Output $releaseNotes >> $env:GITHUB_OUTPUT
+          $releaseNotes | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           Write-Output 'EOF' >> $env:GITHUB_OUTPUT
       - name: Create Draft Release
         id: create_release
