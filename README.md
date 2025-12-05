@@ -18,18 +18,18 @@ PowerShell utilities for CI/CD pipelines. This module provides cmdlets to facili
 ## Installation
 
 ### From PowerShell Gallery (when published)
+
 ```powershell
 Install-Module PipelineUtils -Scope CurrentUser
 ```
 
 ### From Source
+
 ```powershell
 git clone https://github.com/igoravl/PipelineUtils.git
 cd PipelineUtils
-# Install dependencies
-Install-Module InvokeBuild, ModuleBuilder, Pester -Scope CurrentUser
-# Build the module
-Invoke-Build
+# Install dependencies and build
+.\Build.ps1 -InstallDependencies
 ```
 
 ## Cmdlets
@@ -48,6 +48,7 @@ Invoke-Build
 
 - **`Write-PipelineGroupStart`** - Start a collapsible group in logs
 - **`Write-PipelineGroupEnd`** - End a collapsible group in logs
+- **`Write-PipelineGroup`** - Create a collapsible group with a script block
 
 ### Variable Management
 
@@ -58,10 +59,11 @@ Invoke-Build
 
 - **`Add-PipelineBuildTag`** - Add tags to the current build/run
 - **`Set-PipelineBuildNumber`** - Set the build/run number
-- **`Set-PipelineReleaseNumber`** - Set the release name
+- **`Set-PipelineReleaseNumber`** - Set the release name (Azure DevOps only)
 - **`Add-PipelineSummary`** - Add Markdown summary to the pipeline run
 - **`Add-PipelinePath`** - Add a directory to the PATH environment variable
-- **`Complete-PipelineTask`** - Mark task completion with status
+- **`Add-PipelineTaskLogFile`** - Upload a log file (Azure DevOps only)
+- **`Complete-PipelineTask`** - Mark task completion with status (Azure DevOps only)
 
 ### Utility Functions
 
@@ -71,6 +73,7 @@ Invoke-Build
 ## Examples
 
 ### Basic Logging
+
 ```powershell
 Write-PipelineWarning "This is a warning message"
 Write-PipelineError "This is an error message"
@@ -78,12 +81,14 @@ Write-PipelineDebug "This is a debug message"
 ```
 
 ### Advanced Logging with Source Information
+
 ```powershell
 Write-PipelineWarning -Message "Deprecated function used" -SourcePath "script.ps1" -LineNumber 42
 Write-PipelineError -Message "Compilation failed" -SourcePath "build.ps1" -LineNumber 25 -IssueCode "BUILD001"
 ```
 
 ### Setting Variables
+
 ```powershell
 # Set a regular variable (Azure DevOps) or environment variable (GitHub Actions)
 Set-PipelineVariable -Name "BuildNumber" -Value "1.0.42"
@@ -98,7 +103,8 @@ Set-PipelineVariable -Name "DeploymentTarget" -Value "Production" -Output
 Set-PipelineSecretValue -Value "mySecretPassword"
 ```
 
-### Build Management
+### Build Management Examples
+
 ```powershell
 # Add tags to the build
 Add-PipelineBuildTag -Tag "release"
@@ -115,12 +121,14 @@ Add-PipelinePath -Path "C:\tools\bin"
 ```
 
 ### Progress Tracking
+
 ```powershell
 Write-PipelineTaskProgress -CurrentOperation "Installing dependencies" -PercentComplete 25
 Write-PipelineProgress -PercentComplete 75 -Activity "Running tests"
 ```
 
 ### Organizing Output with Groups
+
 ```powershell
 Write-PipelineGroupStart "Build Phase"
 # ... build commands ...
@@ -137,22 +145,23 @@ Write-PipelineSection -Text "Deployment" -Boxed
 This project uses [ModuleBuilder](https://github.com/PoshCode/ModuleBuilder) and [Invoke-Build](https://github.com/nightroman/Invoke-Build) for the build process.
 
 ```powershell
-# Clean previous builds
-Invoke-Build Clean
-
-# Build the module
-Invoke-Build Build
+# Build the module (installs dependencies automatically)
+.\Build.ps1 -InstallDependencies
 
 # Run tests
-Invoke-Build Test
+.\Build.ps1 -InstallDependencies Test
 
 # Create distribution package
-Invoke-Build Pack
+.\Build.ps1 -InstallDependencies Package
+
+# Or use Invoke-Build directly
+Invoke-Build Build
+Invoke-Build Test
 ```
 
 ### Project Structure
 
-```
+```text
 PipelineUtils/
 ├── Source/                    # Source files (ModuleBuilder convention)
 │   ├── Public/               # Public functions (exported)
@@ -171,7 +180,7 @@ PipelineUtils/
 1. Fork the repository
 2. Create a feature branch
 3. Add tests for new functionality
-4. Ensure all tests pass: `Invoke-Build Test`
+4. Ensure all tests pass: `Build.ps1 -Targets Test`
 5. Submit a pull request
 
 ## License
@@ -181,18 +190,23 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Platform-Specific Behavior
 
 ### Azure DevOps
+
 - Uses `##vso[...]` logging commands
-- Supports all advanced features like task completion status, progress tracking
+- Supports all advanced features like task completion status, progress tracking, and release management
 - Variables set with `-Secret` flag are masked in logs
 - Build tags are applied directly to the build
+- Supports classic release pipelines with `Set-PipelineReleaseNumber`
+- Task log files can be uploaded with `Add-PipelineTaskLogFile`
 
 ### GitHub Actions
+
 - Uses `::command::` workflow commands
 - Environment variables are written to `$env:GITHUB_ENV`
 - Output variables are written to `$env:GITHUB_OUTPUT`
-- Secrets must be configured in repository settings
+- Secrets must be configured in repository settings (cannot be set dynamically), but can be masked
 - Summaries are written to `$env:GITHUB_STEP_SUMMARY`
 - Groups use `::group::` and `::endgroup::`
+- Some Azure DevOps-specific commands show warnings when used in GitHub Actions
 
 ## References
 
