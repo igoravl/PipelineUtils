@@ -24,19 +24,10 @@ function Set-PipelineReleaseNumber {
 
     $pipelineType = Get-PipelineType
     
-    switch ($pipelineType) {
-        ([PipelineType]::AzureDevOps) {
-            Write-Output "##vso[release.updatereleasename]$ReleaseNumber"
-        }
-        ([PipelineType]::GitHubActions) {
-            # GitHub Actions doesn't have classic releases, but we can set as notice and env var
-            Write-Output "::notice title=Release Number::$ReleaseNumber"
-            if ($env:GITHUB_ENV) {
-                Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_NUMBER=$ReleaseNumber"
-            }
-        }
-        default {
-            Write-Output "Release name: $ReleaseNumber"
-        }
+    if($pipelineType -ne [PipelineType]::AzureDevOps) {
+        Write-Warning "Set-PipelineReleaseNumber is only supported in Azure DevOps pipelines."
+        return
     }
+    
+    Write-Output "##vso[release.updatereleasename]$ReleaseNumber"
 }

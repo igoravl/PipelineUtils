@@ -1,9 +1,9 @@
-# Example usage of PipelinesUtils in Azure DevOps
+# Example usage of PipelineUtils in Azure DevOps
 
-# This script demonstrates using PipelinesUtils in an Azure DevOps Pipeline
+# This script demonstrates using PipelineUtils in an Azure DevOps Pipeline
 
 # Import the module
-Import-Module PipelinesUtils
+Import-Module PipelineUtils
 
 # Section: Build
 Write-PipelineSection -Text "Build Phase" -Boxed

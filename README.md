@@ -1,4 +1,4 @@
-# PipelinesUtils
+# PipelineUtils
 
 PowerShell utilities for CI/CD pipelines. This module provides cmdlets to facilitate common actions in **Azure DevOps Pipelines** and **GitHub Actions**, such as logging commands, setting variables, and managing build metadata.
 
@@ -19,13 +19,13 @@ PowerShell utilities for CI/CD pipelines. This module provides cmdlets to facili
 
 ### From PowerShell Gallery (when published)
 ```powershell
-Install-Module PipelinesUtils -Scope CurrentUser
+Install-Module PipelineUtils -Scope CurrentUser
 ```
 
 ### From Source
 ```powershell
-git clone https://github.com/igoravl/PipelinesUtils.git
-cd PipelinesUtils
+git clone https://github.com/igoravl/PipelineUtils.git
+cd PipelineUtils
 # Install dependencies
 Install-Module InvokeBuild, ModuleBuilder, Pester -Scope CurrentUser
 # Build the module
@@ -153,12 +153,12 @@ Invoke-Build Pack
 ### Project Structure
 
 ```
-PipelinesUtils/
+PipelineUtils/
 ├── Source/                    # Source files (ModuleBuilder convention)
 │   ├── Public/               # Public functions (exported)
 │   ├── Private/              # Private functions (internal)
 │   ├── Enum/                 # Enums (PipelineType)
-│   ├── PipelinesUtils.psd1   # Module manifest
+│   ├── PipelineUtils.psd1   # Module manifest
 │   └── build.psd1            # ModuleBuilder configuration
 ├── Tests/                    # Pester tests
 ├── Build/                    # Build output (created by ModuleBuilder)

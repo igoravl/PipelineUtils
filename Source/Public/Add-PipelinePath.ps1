@@ -41,15 +41,8 @@ function Add-PipelinePath {
             Write-Host "##vso[task.prependpath]$Path"
         }
         ([PipelineType]::GitHubActions) {
-            if ($env:GITHUB_PATH) {
-                Add-Content -Path $env:GITHUB_PATH -Value $Path
-            }
-            else {
-                Write-Warning "GITHUB_PATH environment variable not found. Cannot add path to PATH."
-            }
-        }
-        default {
-            $env:PATH = "$Path$([System.IO.Path]::PathSeparator)$env:PATH"
+            Add-Content -Path $env:GITHUB_PATH -Value $Path
         }
     }
+    $env:PATH = "$Path$([System.IO.Path]::PathSeparator)$env:PATH"
 }

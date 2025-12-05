@@ -7,7 +7,7 @@
 
 param(
     [string] $BuildNumber,
-    [string] $ModuleName = 'AzurePipelinesUtils'
+    [string] $ModuleName = 'PipelineUtils'
 )
 
 # Synopsis: Default build target - runs Build task
@@ -74,15 +74,17 @@ task GetBuildNumber {
 # Synopsis: Run Pester tests
 task Test Build, {
     Write-Host 'Running Pester tests...'
+
+    Test-Path (Join-Path $PSScriptRoot 'out') || (New-Item -ItemType Directory -Path (Join-Path $PSScriptRoot 'out') | Out-Null)
     
     # Create Pester configuration for Pester 5
     $config = New-PesterConfiguration
     $config.Run.Path = Join-Path $PSScriptRoot 'Tests'
     $config.TestResult.Enabled = $true
-    $config.TestResult.OutputPath = Join-Path $PSScriptRoot 'out\TestResults.xml'
+    $config.TestResult.OutputPath = Join-Path $PSScriptRoot 'out/TestResults.xml'
     $config.TestResult.OutputFormat = 'NUnitXml'
     $config.CodeCoverage.Enabled = $true
-    $config.CodeCoverage.Path = (Get-ChildItem -Path (Join-Path $PSScriptRoot 'out/module') -Include '*.psm1' -Recurse).FullName
+    $config.CodeCoverage.Path = (Get-ChildItem -Path (Join-Path $PSScriptRoot 'Build/PipelineUtils') -Include '*.psm1' -Recurse).FullName
     $config.CodeCoverage.OutputPath = Join-Path $PSScriptRoot 'out/CodeCoverage.xml'
     $config.Output.Verbosity = 'Detailed'
     

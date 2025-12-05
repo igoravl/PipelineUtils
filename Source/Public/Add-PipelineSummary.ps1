@@ -56,16 +56,10 @@ function Add-PipelineSummary {
                 Write-Host "##vso[task.uploadsummary]$summaryPath"
             }
             ([PipelineType]::GitHubActions) {
-                if ($env:GITHUB_STEP_SUMMARY) {
-                    # Append to the GitHub Actions step summary
-                    Get-Content -Path $summaryPath | Add-Content -Path $env:GITHUB_STEP_SUMMARY
-                }
-                else {
-                    Write-Warning "GITHUB_STEP_SUMMARY environment variable not found. Cannot add summary."
-                }
+                # Append to the GitHub Actions step summary
+                Get-Content -Path $summaryPath | Add-Content -Path $env:GITHUB_STEP_SUMMARY
             }
             default {
-                Write-PipelineSection "Pipeline Summary"
                 Get-Content -Path $summaryPath | Write-Host
             }
         }

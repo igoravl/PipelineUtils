@@ -1,9 +1,9 @@
-# Example usage of PipelinesUtils in GitHub Actions
+# Example usage of PipelineUtils in GitHub Actions
 
-# This script demonstrates using PipelinesUtils in a GitHub Actions workflow
+# This script demonstrates using PipelineUtils in a GitHub Actions workflow
 
 # Import the module
-Import-Module PipelinesUtils
+Import-Module PipelineUtils
 
 # Section: Build
 Write-PipelineSection -Text "Build Phase" -Boxed

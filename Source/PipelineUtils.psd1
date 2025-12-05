@@ -1,5 +1,5 @@
 @{
-    RootModule = 'PipelinesUtils.psm1'
+    RootModule = 'PipelineUtils.psm1'
     ModuleVersion = '0.2.0'
     GUID = 'a1234567-b890-c123-d456-e789f0123456'
     Author = 'igoravl'
@@ -23,8 +23,8 @@
     PrivateData = @{
         PSData = @{
             Tags = @('Azure', 'DevOps', 'Pipelines', 'GitHub', 'Actions', 'CI', 'CD', 'Build', 'Automation')
-            LicenseUri = 'https://github.com/igoravl/PipelinesUtils/blob/main/LICENSE'
-            ProjectUri = 'https://github.com/igoravl/PipelinesUtils'
+            LicenseUri = 'https://github.com/igoravl/PipelineUtils/blob/main/LICENSE'
+            ProjectUri = 'https://github.com/igoravl/PipelineUtils'
             IconUri = ''
             Prerelease = ''
             ReleaseNotes = 'Version 0.2.0: Added support for GitHub Actions alongside Azure DevOps Pipelines'
@@ -32,6 +32,6 @@
             ExternalModuleDependencies = @()
         }
     }
-    HelpInfoURI = 'https://github.com/igoravl/PipelinesUtils'
+    HelpInfoURI = 'https://github.com/igoravl/PipelineUtils'
     DefaultCommandPrefix = ''
 }

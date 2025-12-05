@@ -35,9 +35,7 @@ function Set-PipelineBuildNumber {
             # GitHub Actions uses workflow_run name
             Write-Output "::notice title=Build Number::$BuildNumber"
             # Also set as environment variable for reference
-            if ($env:GITHUB_ENV) {
-                Add-Content -Path $env:GITHUB_ENV -Value "BUILD_NUMBER=$BuildNumber"
-            }
+            Add-Content -Path $env:GITHUB_ENV -Value "BUILD_NUMBER=$BuildNumber"
         }
         default {
             Write-Output "Build number: $BuildNumber"
