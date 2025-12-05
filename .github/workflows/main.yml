@@ -182,6 +182,6 @@ jobs:
           Write-Host "Release Notes: $releaseNotes"
           Write-Host "Publishing module..."
           Get-ChildItem -Recurse
-          Publish-Module -Path "Module/${{ env.ModuleName }}" -NuGetApiKey $env:PSGALLERY_KEY -AllowPreRelease -ReleaseNotes $releaseNotes
+          Publish-Module -Name "Module/${{ env.ModuleName }}" -NuGetApiKey $env:PSGALLERY_KEY -AllowPreRelease -ReleaseNotes $releaseNotes
 
 
