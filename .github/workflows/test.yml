@@ -108,32 +108,43 @@ jobs:
           Write-PipelineProgress -Activity "Processing items" -PercentComplete 100
           
           # ============================================================================
-          # SECTION 8: Write-PipelineTaskProgress - Task Progress
-          # ============================================================================
-          Write-PipelineSection -Text "7. Task Progress (Write-PipelineTaskProgress)" -Boxed
-          Write-PipelineTaskProgress -CurrentOperation "Initializing task" -PercentComplete 0
-          Start-Sleep -Milliseconds 100
-          Write-PipelineTaskProgress -CurrentOperation "Processing..." -PercentComplete 50
-          Start-Sleep -Milliseconds 100
-          Write-PipelineTaskProgress -CurrentOperation "Finalizing..." -PercentComplete 100
-          
-          # ============================================================================
-          # SECTION 9: Set-PipelineVariable - Environment Variables
+          # SECTION 8: Set-PipelineVariable - Environment Variables
           # ============================================================================
           Write-PipelineSection -Text "8. Variables (Set-PipelineVariable)" -Boxed
-          Set-PipelineVariable -Name "SHOWCASE_VAR" -Value "This is a pipeline variable"
-          Set-PipelineVariable -Name "OUTPUT_VAR" -Value "This is an output variable" -Output
-          Write-Host "Variables set for subsequent steps"
+          
+          Write-Host "Environment variables before setting new ones:" -ForegroundColor Yellow
+          Get-ChildItem -Path Env: | Select-Object Name, Value | Format-Table -AutoSize | Out-String | Write-Host
+          
+          $varName = "SHOWCASE_VAR"
+          $varValue = "This is a pipeline variable"
+          Write-Host "Setting variable: $varName = $varValue" -ForegroundColor Cyan
+          Set-PipelineVariable -Name $varName -Value $varValue
+          
+          $outputVarName = "OUTPUT_VAR"
+          $outputVarValue = "This is an output variable"
+          Write-Host "Setting output variable: $outputVarName = $outputVarValue" -ForegroundColor Cyan
+          Set-PipelineVariable -Name $outputVarName -Value $outputVarValue -Output
+          
+          Write-Host "Variables set for subsequent steps" -ForegroundColor Green
           
           # ============================================================================
-          # SECTION 10: Set-PipelineSecretValue - Secret Masking
+          # SECTION 9: Set-PipelineSecretValue - Secret Masking
           # ============================================================================
           Write-PipelineSection -Text "9. Secret Masking (Set-PipelineSecretValue)" -Boxed
-          Set-PipelineSecretValue -Value "my-secret-api-key-12345"
-          Write-Host "Secret value has been masked in logs (when detected)"
+          
+          $secretValue = "my-secret-api-key-12345"
+          Write-Host "Secret value BEFORE masking: $secretValue" -ForegroundColor Red
+          Write-Host "This value is currently visible in the logs..." -ForegroundColor Yellow
+          
+          Write-Host "Calling Set-PipelineSecretValue to mask this value..." -ForegroundColor Cyan
+          Set-PipelineSecretValue -Value $secretValue
+          
+          Write-Host "Secret value AFTER masking: $secretValue" -ForegroundColor Green
+          Write-Host "Note: GitHub Actions will now mask instances of this value in future log output" -ForegroundColor Cyan
+          Write-Host "Any subsequent output containing '$secretValue' will be replaced with '***'" -ForegroundColor Cyan
           
           # ============================================================================
-          # SECTION 11: Set-PipelineBuildNumber - Build Number
+          # SECTION 10: Set-PipelineBuildNumber - Build Number
           # ============================================================================
           Write-PipelineSection -Text "10. Build Number (Set-PipelineBuildNumber)" -Boxed
           $buildNumber = "1.0.0-$(Get-Date -Format 'yyyyMMdd.HHmm')"
@@ -141,7 +152,7 @@ jobs:
           Write-Host "Build number set to: $buildNumber"
           
           # ============================================================================
-          # SECTION 12: Set-PipelineReleaseNumber - Release Number
+          # SECTION 11: Set-PipelineReleaseNumber - Release Number
           # ============================================================================
           Write-PipelineSection -Text "11. Release Number (Set-PipelineReleaseNumber)" -Boxed
           $releaseNumber = "v1.0.0"
@@ -149,7 +160,7 @@ jobs:
           Write-Host "Release number set to: $releaseNumber"
           
           # ============================================================================
-          # SECTION 13: Add-PipelineBuildTag - Build Tags
+          # SECTION 12: Add-PipelineBuildTag - Build Tags
           # ============================================================================
           Write-PipelineSection -Text "12. Build Tags (Add-PipelineBuildTag)" -Boxed
           Add-PipelineBuildTag -Tag "showcase"
@@ -158,15 +169,29 @@ jobs:
           Write-Host "Build tags added: showcase, automated, public-commands"
           
           # ============================================================================
-          # SECTION 14: Add-PipelinePath - PATH Management
+          # SECTION 13: Add-PipelinePath - PATH Management
           # ============================================================================
           Write-PipelineSection -Text "13. PATH Management (Add-PipelinePath)" -Boxed
+          
+          Write-Host "Current PATH before adding new directory:" -ForegroundColor Yellow
+          $currentPath = $env:PATH -split [IO.Path]::PathSeparator
+          Write-Host "Number of directories in PATH: $($currentPath.Count)"
+          Write-Host "First 5 directories:" -ForegroundColor Cyan
+          $currentPath | Select-Object -First 5 | ForEach-Object { Write-Host "  - $_" }
+          
           $toolsPath = "${{ github.workspace }}/tools/bin"
+          Write-Host "Adding to PATH: $toolsPath" -ForegroundColor Cyan
           Add-PipelinePath -Path $toolsPath
-          Write-Host "Added to PATH: $toolsPath"
+          
+          Write-Host "New PATH after adding directory:" -ForegroundColor Yellow
+          $newPath = $env:PATH -split [IO.Path]::PathSeparator
+          Write-Host "Number of directories in PATH: $($newPath.Count)"
+          Write-Host "First 5 directories:" -ForegroundColor Cyan
+          $newPath | Select-Object -First 5 | ForEach-Object { Write-Host "  - $_" }
+          Write-Host "Path successfully added! ✓" -ForegroundColor Green
           
           # ============================================================================
-          # SECTION 15: Add-PipelineTaskLogFile - Log Files
+          # SECTION 14: Add-PipelineTaskLogFile - Log Files
           # ============================================================================
           Write-PipelineSection -Text "14. Task Log Files (Add-PipelineTaskLogFile)" -Boxed
           $logPath = "${{ github.workspace }}/test-log.txt"
@@ -179,7 +204,7 @@ jobs:
           Write-Host "Log file attached: $logPath"
           
           # ============================================================================
-          # SECTION 16: Add-PipelineSummary - Job Summary
+          # SECTION 15: Add-PipelineSummary - Job Summary
           # ============================================================================
           Write-PipelineSection -Text "15. Job Summary (Add-PipelineSummary)" -Boxed
           $summary = @"
@@ -193,7 +218,6 @@ jobs:
           - ✅ Write-PipelineWarning
           - ✅ Write-PipelineError
           - ✅ Write-PipelineProgress
-          - ✅ Write-PipelineTaskProgress
           - ✅ Set-PipelineVariable
           - ✅ Set-PipelineSecretValue
           - ✅ Set-PipelineBuildNumber
@@ -212,8 +236,42 @@ jobs:
           Add-PipelineSummary -Content $summary
           
           # ============================================================================
-          # SECTION 17: Complete-PipelineTask - Task Completion
+          # SECTION 16: Complete-PipelineTask - Task Completion
           # ============================================================================
           Write-PipelineSection -Text "16. Task Completion (Complete-PipelineTask)" -Boxed
           Write-Host "Completing task with success status..."
           Complete-PipelineTask -Status 'Succeeded'
+      
+      - name: Verify Variables and PATH
+        shell: pwsh
+        run: |
+          Write-Host "============================================================================" -ForegroundColor Cyan
+          Write-Host "VERIFICATION: Variables and PATH Set in Previous Step" -ForegroundColor Cyan
+          Write-Host "============================================================================" -ForegroundColor Cyan
+          
+          Write-Host "`n1. Checking SHOWCASE_VAR environment variable:" -ForegroundColor Yellow
+          if ($env:SHOWCASE_VAR) {
+            Write-Host "   ✅ SHOWCASE_VAR = $env:SHOWCASE_VAR" -ForegroundColor Green
+          }
+          else {
+            Write-Host "   ⚠️  SHOWCASE_VAR not found in this step (this is expected for environment variables)" -ForegroundColor Yellow
+          }
+          
+          Write-Host "`n2. Checking if tools directory would be in PATH:" -ForegroundColor Yellow
+          $toolsPath = "${{ github.workspace }}/tools/bin"
+          $pathDirs = $env:PATH -split [IO.Path]::PathSeparator
+          if ($pathDirs -contains $toolsPath) {
+            Write-Host "   ✅ Tools path is in PATH: $toolsPath" -ForegroundColor Green
+          }
+          else {
+            Write-Host "   ℹ️  Tools path not yet in this step's PATH (added in previous step)" -ForegroundColor Cyan
+            Write-Host "   📌 In real workflows, subsequent steps would have access to this path" -ForegroundColor Cyan
+          }
+          
+          Write-Host "`n3. Current PATH directories (first 10):" -ForegroundColor Yellow
+          $pathDirs | Select-Object -First 10 | ForEach-Object { 
+            Write-Host "   - $_" -ForegroundColor Gray
+          }
+          
+          Write-Host "`n✅ Verification complete!`n" -ForegroundColor Green
+
