@@ -1,14 +1,197 @@
+name: Test & Showcase
+
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  testJob:
+  showcase:
+    name: Showcase All Commands
     runs-on: ubuntu-latest
+    
     steps:
-      - run: |
-          echo "##[error]Error"
-          echo "##[warning]Warning"
-          echo "##[info]Info"
-          echo "##[debug]Debug"
-          echo "##[command]Command"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup PowerShell
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+      
+      - name: Showcase PipelineUtils Commands
+        shell: pwsh
+        run: |
+          # Import the module
+          Import-Module "${{ github.workspace }}/Source/PipelineUtils.psm1"
           
+          # ============================================================================
+          # SECTION 1: Write-PipelineSection - Section Headers
+          # ============================================================================
+          Write-PipelineSection -Text "PipelineUtils Command Showcase" -Boxed
+          
+          # ============================================================================
+          # SECTION 2: Write-PipelineGroupStart/End - Collapsible Groups
+          # ============================================================================
+          Write-PipelineGroupStart "1. Group Commands (Write-PipelineGroupStart/End)"
+          Write-Host "These commands create collapsible groups in the pipeline log"
+          Write-PipelineGroupStart "Nested Group Example"
+          Write-Host "This is a nested group showing hierarchy"
+          Write-PipelineGroupEnd
+          Write-PipelineGroupEnd
+          
+          # ============================================================================
+          # SECTION 3: Write-PipelineCommand - Command Messages
+          # ============================================================================
+          Write-PipelineSection -Text "2. Command Messages (Write-PipelineCommand)" -Boxed
+          Write-PipelineCommand "This is a command message for the pipeline log"
+          Write-PipelineCommand "Commands help identify important operations"
+          
+          # ============================================================================
+          # SECTION 4: Write-PipelineDebug - Debug Output
+          # ============================================================================
+          Write-PipelineSection -Text "3. Debug Output (Write-PipelineDebug)" -Boxed
+          Write-PipelineDebug "This is debug information"
+          Write-PipelineDebug "Debug messages are visible with --debug flag"
+          Write-PipelineDebug "GitHub Workspace: ${{ github.workspace }}"
+          Write-PipelineDebug "GitHub Repository: ${{ github.repository }}"
+          
+          # ============================================================================
+          # SECTION 5: Write-PipelineWarning - Warning Messages
+          # ============================================================================
+          Write-PipelineSection -Text "4. Warning Messages (Write-PipelineWarning)" -Boxed
+          Write-PipelineWarning -Message "This is a warning message"
+          Write-PipelineWarning -Message "Warnings highlight potential issues" -SourcePath "Source/PipelineUtils.psm1" -LineNumber 1
+          
+          # ============================================================================
+          # SECTION 6: Write-PipelineError - Error Messages
+          # ============================================================================
+          Write-PipelineSection -Text "5. Error Messages (Write-PipelineError)" -Boxed
+          Write-PipelineError -Message "This is an error message" -SourcePath "Source/PipelineUtils.psm1" -LineNumber 42
+          Write-PipelineError -Message "Errors indicate failure conditions"
+          
+          # ============================================================================
+          # SECTION 7: Write-PipelineProgress - Progress Indicators
+          # ============================================================================
+          Write-PipelineSection -Text "6. Progress Tracking (Write-PipelineProgress)" -Boxed
+          Write-PipelineProgress -Activity "Processing items" -PercentComplete 0
+          Start-Sleep -Milliseconds 100
+          Write-PipelineProgress -Activity "Processing items" -PercentComplete 25
+          Start-Sleep -Milliseconds 100
+          Write-PipelineProgress -Activity "Processing items" -PercentComplete 50
+          Start-Sleep -Milliseconds 100
+          Write-PipelineProgress -Activity "Processing items" -PercentComplete 75
+          Start-Sleep -Milliseconds 100
+          Write-PipelineProgress -Activity "Processing items" -PercentComplete 100
+          
+          # ============================================================================
+          # SECTION 8: Write-PipelineTaskProgress - Task Progress
+          # ============================================================================
+          Write-PipelineSection -Text "7. Task Progress (Write-PipelineTaskProgress)" -Boxed
+          Write-PipelineTaskProgress -CurrentOperation "Initializing task" -PercentComplete 0
+          Start-Sleep -Milliseconds 100
+          Write-PipelineTaskProgress -CurrentOperation "Processing..." -PercentComplete 50
+          Start-Sleep -Milliseconds 100
+          Write-PipelineTaskProgress -CurrentOperation "Finalizing..." -PercentComplete 100
+          
+          # ============================================================================
+          # SECTION 9: Set-PipelineVariable - Environment Variables
+          # ============================================================================
+          Write-PipelineSection -Text "8. Variables (Set-PipelineVariable)" -Boxed
+          Set-PipelineVariable -Name "SHOWCASE_VAR" -Value "This is a pipeline variable"
+          Set-PipelineVariable -Name "OUTPUT_VAR" -Value "This is an output variable" -Output
+          Write-Host "Variables set for subsequent steps"
+          
+          # ============================================================================
+          # SECTION 10: Set-PipelineSecretValue - Secret Masking
+          # ============================================================================
+          Write-PipelineSection -Text "9. Secret Masking (Set-PipelineSecretValue)" -Boxed
+          Set-PipelineSecretValue -Value "my-secret-api-key-12345"
+          Write-Host "Secret value has been masked in logs (when detected)"
+          
+          # ============================================================================
+          # SECTION 11: Set-PipelineBuildNumber - Build Number
+          # ============================================================================
+          Write-PipelineSection -Text "10. Build Number (Set-PipelineBuildNumber)" -Boxed
+          $buildNumber = "1.0.0-$(Get-Date -Format 'yyyyMMdd.HHmm')"
+          Set-PipelineBuildNumber -BuildNumber $buildNumber
+          Write-Host "Build number set to: $buildNumber"
+          
+          # ============================================================================
+          # SECTION 12: Set-PipelineReleaseNumber - Release Number
+          # ============================================================================
+          Write-PipelineSection -Text "11. Release Number (Set-PipelineReleaseNumber)" -Boxed
+          $releaseNumber = "v1.0.0"
+          Set-PipelineReleaseNumber -ReleaseNumber $releaseNumber
+          Write-Host "Release number set to: $releaseNumber"
+          
+          # ============================================================================
+          # SECTION 13: Add-PipelineBuildTag - Build Tags
+          # ============================================================================
+          Write-PipelineSection -Text "12. Build Tags (Add-PipelineBuildTag)" -Boxed
+          Add-PipelineBuildTag -Tag "showcase"
+          Add-PipelineBuildTag -Tag "automated"
+          Add-PipelineBuildTag -Tag "public-commands"
+          Write-Host "Build tags added: showcase, automated, public-commands"
+          
+          # ============================================================================
+          # SECTION 14: Add-PipelinePath - PATH Management
+          # ============================================================================
+          Write-PipelineSection -Text "13. PATH Management (Add-PipelinePath)" -Boxed
+          $toolsPath = "${{ github.workspace }}/tools/bin"
+          Add-PipelinePath -Path $toolsPath
+          Write-Host "Added to PATH: $toolsPath"
+          
+          # ============================================================================
+          # SECTION 15: Add-PipelineTaskLogFile - Log Files
+          # ============================================================================
+          Write-PipelineSection -Text "14. Task Log Files (Add-PipelineTaskLogFile)" -Boxed
+          $logPath = "${{ github.workspace }}/test-log.txt"
+          @"
+          This is a test log file
+          It can contain any output from the task
+          Multiple lines are supported
+          "@| Out-File -FilePath $logPath
+          Add-PipelineTaskLogFile -Path $logPath
+          Write-Host "Log file attached: $logPath"
+          
+          # ============================================================================
+          # SECTION 16: Add-PipelineSummary - Job Summary
+          # ============================================================================
+          Write-PipelineSection -Text "15. Job Summary (Add-PipelineSummary)" -Boxed
+          $summary = @"
+          ## PipelineUtils Showcase Summary
+          
+          ### Commands Demonstrated
+          - ✅ Write-PipelineSection
+          - ✅ Write-PipelineGroupStart/End
+          - ✅ Write-PipelineCommand
+          - ✅ Write-PipelineDebug
+          - ✅ Write-PipelineWarning
+          - ✅ Write-PipelineError
+          - ✅ Write-PipelineProgress
+          - ✅ Write-PipelineTaskProgress
+          - ✅ Set-PipelineVariable
+          - ✅ Set-PipelineSecretValue
+          - ✅ Set-PipelineBuildNumber
+          - ✅ Set-PipelineReleaseNumber
+          - ✅ Add-PipelineBuildTag
+          - ✅ Add-PipelinePath
+          - ✅ Add-PipelineTaskLogFile
+          - ✅ Add-PipelineSummary
+          - ✅ Complete-PipelineTask
+          
+          ### Environment
+          - OS: ${{ runner.os }}
+          - Runner: ${{ runner.name }}
+          - PowerShell: $($PSVersionTable.PSVersion)
+          "@
+          Add-PipelineSummary -Content $summary
+          
+          # ============================================================================
+          # SECTION 17: Complete-PipelineTask - Task Completion
+          # ============================================================================
+          Write-PipelineSection -Text "16. Task Completion (Complete-PipelineTask)" -Boxed
+          Write-Host "Completing task with success status..."
+          Complete-PipelineTask -Status 'Succeeded'
