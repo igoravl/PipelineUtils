@@ -67,7 +67,7 @@ jobs:
           
           # 3. Write-PipelineCommand
           Write-PipelineSection -Text "3. Command Messages (Write-PipelineCommand)" -Boxed
-          Write-PipelineCommand "Command message - prefixed output for important operations"
+          Write-PipelineCommand 'PS> Get-Process | Where-Object { $_.CPU -gt 90 }" -Message "Listing processes with CPU > 100"'
           
           # 4. Write-PipelineDebug
           Write-PipelineSection -Text "4. Debug Output (Write-PipelineDebug)" -Boxed
