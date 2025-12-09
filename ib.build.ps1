@@ -42,25 +42,41 @@ task Build Clean, GetBuildNumber, {
 task GetBuildNumber {
     Write-Host "Getting build number..."
 
-    # Check if GitVersion.Tool is installed
-    $gitVersionInstalled = $null -ne (dotnet tool list --global | Where-Object { $_ -match 'gitversion.tool' })
-
-    if (-not $gitVersionInstalled) {
-        Write-Error "GitVersion.Tool is not installed. Install it with: dotnet tool install --global GitVersion.Tool"
-        throw "Required tool GitVersion.Tool is not installed."
-    }
-
-    # Use GitVersion to get the SemVer
-    Write-Host "Running GitVersion..."
-    $gitVersionOutput = dotnet-gitversion
-    $gitVersionInfo = $gitVersionOutput | ConvertFrom-Json
-
-    # Set the build number
-    if($gitVersionInfo.PreReleaseLabel) {
-        $preReleasePart = "-pre$($gitVersionInfo.WeightedPreReleaseNumber)"
-    }
+    # Try to use GitVersion if available, fall back to simple versioning
+    $script:BuildNumber = "1.0.0"
     
-    $script:BuildNumber = $gitVersionInfo.MajorMinorPatch + $preReleasePart
+    try {
+        # Check if GitVersion.Tool is installed
+        $gitVersionInstalled = $null -ne (dotnet tool list --global | Where-Object { $_ -match 'gitversion.tool' })
+
+        if ($gitVersionInstalled) {
+            # Use GitVersion to get the SemVer
+            Write-Host "Running GitVersion..."
+            $gitVersionOutput = dotnet-gitversion 2>$null
+            
+            if ($gitVersionOutput) {
+                try {
+                    $gitVersionInfo = $gitVersionOutput | ConvertFrom-Json -ErrorAction Stop
+                    
+                    # Set the build number
+                    if($gitVersionInfo.PreReleaseLabel) {
+                        $preReleasePart = "-pre$($gitVersionInfo.WeightedPreReleaseNumber)"
+                    }
+                    
+                    $script:BuildNumber = $gitVersionInfo.MajorMinorPatch + $preReleasePart
+                    Write-Host "Build number from GitVersion: $BuildNumber"
+                }
+                catch {
+                    Write-Warning "Failed to parse GitVersion output, using default version"
+                    $script:BuildNumber = "1.0.0"
+                }
+            }
+        }
+    }
+    catch {
+        Write-Warning "GitVersion not available, using default version"
+        $script:BuildNumber = "1.0.0"
+    }
 
     Write-Host "Build number set to: $BuildNumber"
 
