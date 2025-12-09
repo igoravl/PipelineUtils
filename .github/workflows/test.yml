@@ -50,79 +50,86 @@ jobs:
           
           Write-PipelineSection -Text "PipelineUtils Command Showcase" -Boxed
           
-          # 1. Write-PipelineGroupStart/End
-          Write-PipelineGroupStart "1. Collapsible Groups (Write-PipelineGroupStart/End)"
+          # 1. Write-PipelineSection
+          Write-PipelineSection -Text "1. Section Headers (Write-PipelineSection)" -Boxed
+          Write-Host "Without boxed parameter:" -ForegroundColor Cyan
+          Write-PipelineSection -Text "Simple section header"
+          Write-Host "With boxed parameter:" -ForegroundColor Cyan
+          Write-PipelineSection -Text "Boxed section header" -Boxed
+          
+          # 2. Write-PipelineGroupStart/End
+          Write-PipelineGroupStart "2. Collapsible Groups (Write-PipelineGroupStart/End)"
           Write-Host "Creates collapsible/expandable groups in GitHub Actions logs"
           Write-PipelineGroupStart "Nested Group Example"
           Write-Host "This is a nested group showing hierarchy"
           Write-PipelineGroupEnd
           Write-PipelineGroupEnd
           
-          # 2. Write-PipelineCommand
-          Write-PipelineSection -Text "2. Command Messages (Write-PipelineCommand)" -Boxed
+          # 3. Write-PipelineCommand
+          Write-PipelineSection -Text "3. Command Messages (Write-PipelineCommand)" -Boxed
           Write-PipelineCommand "Command message - prefixed output for important operations"
           
-          # 3. Write-PipelineDebug
-          Write-PipelineSection -Text "3. Debug Output (Write-PipelineDebug)" -Boxed
+          # 4. Write-PipelineDebug
+          Write-PipelineSection -Text "4. Debug Output (Write-PipelineDebug)" -Boxed
           Write-PipelineDebug "Debug message - hidden by default, visible with --debug flag"
           Write-PipelineDebug "Workspace: ${{ github.workspace }} | Repository: ${{ github.repository }}"
           
-          # 4. Write-PipelineWarning
-          Write-PipelineSection -Text "4. Warning Messages (Write-PipelineWarning)" -Boxed
+          # 5. Write-PipelineWarning
+          Write-PipelineSection -Text "5. Warning Messages (Write-PipelineWarning)" -Boxed
           Write-PipelineWarning -Message "Warning message - highlighted alert without failing the job" -SourcePath "Source/PipelineUtils.psm1" -LineNumber 42
           
-          # 5. Write-PipelineError
-          Write-PipelineSection -Text "5. Error Messages (Write-PipelineError)" -Boxed
+          # 6. Write-PipelineError
+          Write-PipelineSection -Text "6. Error Messages (Write-PipelineError)" -Boxed
           Write-PipelineError -Message "Error message - indicates failure or critical issues" -SourcePath "Source/PipelineUtils.psm1" -LineNumber 42
           
-          # 6. Write-PipelineProgress
-          Write-PipelineSection -Text "6. Progress Tracking (Write-PipelineProgress)" -Boxed
+          # 7. Write-PipelineProgress
+          Write-PipelineSection -Text "7. Progress Tracking (Write-PipelineProgress)" -Boxed
           for ($i = 0; $i -le 100; $i += 25) {
             Write-PipelineProgress -Activity "Processing items" -PercentComplete $i
             if ($i -lt 100) { Start-Sleep -Milliseconds 100 }
           }
           
-          # 7. Set-PipelineVariable
-          Write-PipelineSection -Text "7. Environment Variables (Set-PipelineVariable)" -Boxed
+          # 8. Set-PipelineVariable
+          Write-PipelineSection -Text "8. Environment Variables (Set-PipelineVariable)" -Boxed
           Write-Host "Sets environment and output variables for subsequent steps" -ForegroundColor Cyan
           Set-PipelineVariable -Name "SHOWCASE_VAR" -Value "This is a pipeline variable"
           Set-PipelineVariable -Name "OUTPUT_VAR" -Value "This is an output variable" -Output
           Write-Host "Variables set: SHOWCASE_VAR (env), OUTPUT_VAR (output)" -ForegroundColor Green
           
-          # 8. Set-PipelineSecretValue
-          Write-PipelineSection -Text "8. Secret Masking (Set-PipelineSecretValue)" -Boxed
+          # 9. Set-PipelineSecretValue
+          Write-PipelineSection -Text "9. Secret Masking (Set-PipelineSecretValue)" -Boxed
           $secretValue = "my-secret-api-key-12345"
           Write-Host "Before masking: $secretValue" -ForegroundColor Red
           Set-PipelineSecretValue -Value $secretValue
           Write-Host "After masking: $secretValue - will be replaced with *** in logs" -ForegroundColor Green
           
-          # 9. Set-PipelineBuildNumber
-          Write-PipelineSection -Text "9. Build Number (Set-PipelineBuildNumber)" -Boxed
+          # 10. Set-PipelineBuildNumber
+          Write-PipelineSection -Text "10. Build Number (Set-PipelineBuildNumber)" -Boxed
           $buildNumber = "1.0.0-$(Get-Date -Format 'yyyyMMdd.HHmm')"
           Set-PipelineBuildNumber -BuildNumber $buildNumber
           Write-Host "Build number set to: $buildNumber" -ForegroundColor Green
           
-          # 10. Set-PipelineReleaseNumber
-          Write-PipelineSection -Text "10. Release Number (Set-PipelineReleaseNumber)" -Boxed
+          # 11. Set-PipelineReleaseNumber
+          Write-PipelineSection -Text "11. Release Number (Set-PipelineReleaseNumber)" -Boxed
           $releaseNumber = "v1.0.0"
           Set-PipelineReleaseNumber -ReleaseNumber $releaseNumber
           Write-Host "Release number set to: $releaseNumber" -ForegroundColor Green
           
-          # 11. Add-PipelineBuildTag
-          Write-PipelineSection -Text "11. Build Tags (Add-PipelineBuildTag)" -Boxed
+          # 12. Add-PipelineBuildTag
+          Write-PipelineSection -Text "12. Build Tags (Add-PipelineBuildTag)" -Boxed
           @("showcase", "automated", "public-commands") | ForEach-Object {
             Add-PipelineBuildTag -Tag $_
           }
           Write-Host "Build tags added: showcase, automated, public-commands" -ForegroundColor Green
           
-          # 12. Add-PipelinePath
-          Write-PipelineSection -Text "12. PATH Management (Add-PipelinePath)" -Boxed
+          # 13. Add-PipelinePath
+          Write-PipelineSection -Text "13. PATH Management (Add-PipelinePath)" -Boxed
           $toolsPath = "${{ github.workspace }}/Build"
           Add-PipelinePath -Path $toolsPath
           Write-Host "Added to PATH: $toolsPath" -ForegroundColor Green
           
-          # 13. Add-PipelineTaskLogFile
-          Write-PipelineSection -Text "13. Task Log Files (Add-PipelineTaskLogFile)" -Boxed
+          # 14. Add-PipelineTaskLogFile
+          Write-PipelineSection -Text "14. Task Log Files (Add-PipelineTaskLogFile)" -Boxed
           $logPath = "${{ github.workspace }}/test-log.txt"
           @"
           PipelineUtils Test Log
@@ -132,8 +139,8 @@ jobs:
           Add-PipelineTaskLogFile -Path $logPath
           Write-Host "Log file attached: test-log.txt" -ForegroundColor Green
           
-          # 14. Add-PipelineSummary
-          Write-PipelineSection -Text "14. Job Summary (Add-PipelineSummary)" -Boxed
+          # 15. Add-PipelineSummary
+          Write-PipelineSection -Text "15. Job Summary (Add-PipelineSummary)" -Boxed
           $summary = @"
           ## PipelineUtils Showcase Summary
           
@@ -162,8 +169,8 @@ jobs:
           Add-PipelineSummary -Content $summary
           Write-Host "Summary added to job summary page" -ForegroundColor Green
           
-          # 15. Complete-PipelineTask
-          Write-PipelineSection -Text "15. Task Completion (Complete-PipelineTask)" -Boxed
+          # 16. Complete-PipelineTask
+          Write-PipelineSection -Text "16. Task Completion (Complete-PipelineTask)" -Boxed
           Write-Host "Completing task with success status..." -ForegroundColor Cyan
           Complete-PipelineTask -Status 'Succeeded'
       
