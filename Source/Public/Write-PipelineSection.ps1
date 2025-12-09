@@ -42,4 +42,5 @@ Function Write-PipelineSection {
     }    
 
     Write-Host "${box}${prefix}$msg${box}" -ForegroundColor Cyan
+    Write-Host "" -ForegroundColor Cyan
 }
