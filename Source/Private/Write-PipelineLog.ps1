@@ -89,7 +89,6 @@ function Write-PipelineLog {
                 'warning' { $prefix = '::warning'; $suffix = '::'; $ghaSupportsProps = $true }
                 'info'    { $prefix = '::notice'; $suffix = '::'; $ghaSupportsProps = $true }
                 'debug'   { $prefix = '::debug::'; $suffix = '' }
-                'command' { $prefix = '::notice title=command::'; $suffix = '' }
             }
         }
         else {
