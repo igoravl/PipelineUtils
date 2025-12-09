@@ -83,14 +83,14 @@ function Set-PipelineVariable {
             
             # Note: GitHub Actions handles secrets differently - they must be defined in repository/organization settings
             if ($Secret) {
-                Write-PipelineLog -Message "Secret flag is not applicable in GitHub Actions. Secrets must be configured in repository settings." -LogType 'Warning' -DoNotUpdateJobStatus
+                Write-PipelineWarning -Message "Secret flag is not applicable in GitHub Actions. Secrets must be configured in repository settings. Value will be masked in logs, though." 
+                Set-PipelineSecretValue -Value $Value
             }
             if ($ReadOnly) {
-                Write-PipelineLog -Message "ReadOnly flag is not applicable in GitHub Actions." -LogType 'Warning' -DoNotUpdateJobStatus
+                Write-PipelineWarning -Message "ReadOnly flag is not applicable in GitHub Actions." 
             }
         }
-        default {
-            Write-PipelineLog -Message "Not running in a supported pipeline environment. Variable '$Name' was not set." -LogType 'Warning' -DoNotUpdateJobStatus
-        }
     }
+
+    Set-Item "env:$Name" = $Value
 }
