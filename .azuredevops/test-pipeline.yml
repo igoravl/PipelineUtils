@@ -1,0 +1,94 @@
+name: Test & Showcase
+
+trigger:
+  branches:
+    include:
+      - main
+pr:
+  branches:
+    include:
+      - main
+
+jobs:
+  - job: Showcase
+    displayName: Showcase All Commands
+    pool:
+      vmImage: ubuntu-latest
+    
+    steps:
+      - checkout: self
+      
+      - task: PowerShell@2
+        displayName: Setup PowerShell
+        inputs:
+          targetType: inline
+          pwsh: true
+          script: |
+            Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+      
+      - task: PowerShell@2
+        displayName: Build Module
+        inputs:
+          targetType: inline
+          pwsh: true
+          script: |
+            Write-Host "Building PipelineUtils module..." -ForegroundColor Cyan
+            & "$(Build.SourcesDirectory)/Build.ps1" -InstallDependencies
+            
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Build failed with exit code $LASTEXITCODE"
+              exit 1
+            }
+            Write-Host "Build completed successfully" -ForegroundColor Green
+      
+      - task: PowerShell@2
+        name: Showcase
+        displayName: Showcase PipelineUtils Commands
+        inputs:
+          targetType: filePath
+          filePath: $(Build.SourcesDirectory)/Tests/Invoke-ShowcaseCommands.ps1
+          arguments: >
+            -WorkspacePath "$(Build.SourcesDirectory)"
+            -RunnerOS "$(Agent.OS)"
+            -RunnerName "$(Agent.Name)"
+          pwsh: true
+      
+      - task: PowerShell@2
+        displayName: Verify Variables and PATH
+        inputs:
+          targetType: inline
+          pwsh: true
+          script: |
+            Write-Host "== Verification: Variables, PATH and Outputs ==" -ForegroundColor Cyan
+            
+            Write-Host "`n1. Environment Variables:" -ForegroundColor Yellow
+            if ($env:SHOWCASE_VAR) {
+              Write-Host "   ✅ SHOWCASE_VAR = $env:SHOWCASE_VAR" -ForegroundColor Green
+            }
+            else {
+              Write-Host "   ℹ️  SHOWCASE_VAR not found (variables don't persist across steps)" -ForegroundColor Cyan
+            }
+            
+            Write-Host "`n2. Output Variables:" -ForegroundColor Yellow
+            $outputVar = $env:OUTPUT_VAR
+            if ($outputVar) {
+              Write-Host "   ✅ OUTPUT_VAR = $outputVar" -ForegroundColor Green
+            }
+            else {
+              Write-Host "   ⚠️  OUTPUT_VAR not found in task variables" -ForegroundColor Yellow
+            }
+            
+            Write-Host "`n3. All Environment Variables Count:" -ForegroundColor Yellow
+            Write-Host "   $($(Get-ChildItem -Path Env:).Count) environment variables found" -ForegroundColor Cyan
+            
+            Write-Host "`n4. Tools Path in PATH:" -ForegroundColor Yellow
+            $toolsPath = "$(Build.SourcesDirectory)/build"
+            $pathDirs = $env:PATH -split [IO.Path]::PathSeparator
+            if ($pathDirs -contains $toolsPath) {
+              Write-Host "   ✅ Tools path added: $toolsPath" -ForegroundColor Green
+            }
+            else {
+              Write-Host "   ℹ️  Tools path not in current step (added in previous step)" -ForegroundColor Cyan
+            }
+            
+            Write-Host "`n✅ Verification complete`n" -ForegroundColor Green
