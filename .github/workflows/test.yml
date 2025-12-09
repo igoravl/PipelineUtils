@@ -179,7 +179,7 @@ jobs:
           Write-Host "First 5 directories:" -ForegroundColor Cyan
           $currentPath | Select-Object -First 5 | ForEach-Object { Write-Host "  - $_" }
           
-          $toolsPath = "${{ github.workspace }}/tools/bin"
+          $toolsPath = "${{ github.workspace }}/Build"
           Write-Host "Adding to PATH: $toolsPath" -ForegroundColor Cyan
           Add-PipelinePath -Path $toolsPath
           
@@ -258,7 +258,7 @@ jobs:
           }
           
           Write-Host "`n2. Checking if tools directory would be in PATH:" -ForegroundColor Yellow
-          $toolsPath = "${{ github.workspace }}/tools/bin"
+          $toolsPath = "${{ github.workspace }}/build"
           $pathDirs = $env:PATH -split [IO.Path]::PathSeparator
           if ($pathDirs -contains $toolsPath) {
             Write-Host "   ✅ Tools path is in PATH: $toolsPath" -ForegroundColor Green
