@@ -41,5 +41,5 @@ Function Write-PipelineSection {
         $box += ("${prefix}$('=' * $msg.Length)`n")
     }    
 
-    Write-Host "${box}${prefix}$msg${box}`n" -ForegroundColor Cyan
+    Write-Host "${box}${prefix}$msg${box}" -ForegroundColor Cyan
 }
