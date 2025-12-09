@@ -18,7 +18,7 @@ jobs:
       - name: Setup PowerShell
         shell: pwsh
         run: |
-          Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+          Write-Host "##[section]PowerShell Version: $($PSVersionTable.PSVersion)"
       
       - name: Build Module
         shell: pwsh
@@ -170,7 +170,7 @@ jobs:
       - name: Verify Variables and PATH
         shell: pwsh
         run: |
-          Write-PipelineSection -Text "Verification: Variables and PATH" -Boxed
+          Write-Host "== Verification: Variables and PATH ==" -ForegroundColor Cyan
           
           Write-Host "`n1. Environment Variables:" -ForegroundColor Yellow
           if ($env:SHOWCASE_VAR) {
