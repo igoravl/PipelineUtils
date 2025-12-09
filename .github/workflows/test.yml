@@ -20,11 +20,31 @@ jobs:
         run: |
           Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
       
+      - name: Build Module
+        shell: pwsh
+        run: |
+          Write-Host "Building PipelineUtils module..." -ForegroundColor Cyan
+          & "${{ github.workspace }}/Build.ps1" -InstallDependencies
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Build failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          Write-Host "Build completed successfully" -ForegroundColor Green
+      
       - name: Showcase PipelineUtils Commands
         shell: pwsh
         run: |
-          # Import the module
-          Import-Module "${{ github.workspace }}/Source/PipelineUtils.psm1"
+          # Find and import the built module
+          $modulePath = Get-ChildItem -Path "${{ github.workspace }}" -Filter "PipelineUtils.psd1" -Recurse | Where-Object { $_.FullName -like "*Output*" } | Select-Object -First 1
+          
+          if (-not $modulePath) {
+            Write-Error "Built module not found. Build step may have failed."
+            exit 1
+          }
+          
+          Write-Host "Loading module from: $($modulePath.FullName)" -ForegroundColor Cyan
+          Import-Module $modulePath.FullName -Force
           
           # ============================================================================
           # SECTION 1: Write-PipelineSection - Section Headers
