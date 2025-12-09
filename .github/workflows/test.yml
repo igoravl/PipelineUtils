@@ -36,10 +36,12 @@ jobs:
         shell: pwsh
         run: |
           # Find and import the built module
-          $modulePath = Get-ChildItem -Path "${{ github.workspace }}" -Filter "PipelineUtils.psd1" -Recurse | Where-Object { $_.FullName -like "*Output*" } | Select-Object -First 1
+          $modulePath = Get-ChildItem -Path "${{ github.workspace }}" -Filter "PipelineUtils.psd1" -Recurse | Where-Object { $_.FullName -notlike "*Source*" } | Select-Object -First 1
           
           if (-not $modulePath) {
             Write-Error "Built module not found. Build step may have failed."
+            Write-Host "Searching for .psd1 files..."
+            Get-ChildItem -Path "${{ github.workspace }}" -Filter "*.psd1" -Recurse | ForEach-Object { Write-Host $_.FullName }
             exit 1
           }
           
