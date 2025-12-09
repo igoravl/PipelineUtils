@@ -34,20 +34,12 @@ Function Write-PipelineSection {
     $pipelineType = Get-PipelineType
 
     if ($pipelineType -ne [PipelineType]::Unknown) {
-        switch ($pipelineType) {
-            ([PipelineType]::AzureDevOps) {
-                $prefix = '##[section]'
-            }
-            ([PipelineType]::GitHubActions) {
-                # GitHub Actions doesn't have a specific section command, use notice
-                $prefix = ''
-            }
-        }
+        $prefix = '##[section]'
     }
 
     if ($Boxed) {
         $box += ("${prefix}$('=' * $msg.Length)`n")
     }    
 
-    Write-Host "${box}${prefix}$msg${box}" -ForegroundColor Cyan
+    Write-Host "${box}${prefix}$msg${box}`n" -ForegroundColor Cyan
 }
