@@ -171,8 +171,8 @@ jobs:
           
           # 16. Complete-PipelineTask
           Write-PipelineSection -Text "16. Task Completion (Complete-PipelineTask)" -Boxed
-          Write-Host "Completing task with success status..." -ForegroundColor Cyan
-          Complete-PipelineTask -Status 'Succeeded'
+          Write-Host "Completing task with partial success status..." -ForegroundColor Cyan
+          Complete-PipelineTask -Status 'SucceededWithIssues'
       
       - name: Verify Variables and PATH
         shell: pwsh
