@@ -92,5 +92,5 @@ function Set-PipelineVariable {
         }
     }
 
-    Set-Item "env:$Name" = $Value
+    Set-Item -Path "env:$Name" -Value $Value
 }
