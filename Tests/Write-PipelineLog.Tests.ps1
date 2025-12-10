@@ -95,7 +95,7 @@ InModuleScope -ModuleName 'PipelineUtils' {
         
             It 'writes command messages with correct format' {
                 $output = Write-PipelineLog -Message 'Test command' -LogType Command 6>&1
-                $output | Should -Be '::notice title=command::Test command'
+                $output | Should -Be '##[command]Test command'
             }
         }
     
