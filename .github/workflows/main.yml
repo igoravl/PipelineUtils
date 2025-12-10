@@ -30,6 +30,16 @@ jobs:
         shell: pwsh
         run: |
           ./Build.ps1 -Targets Package -Verbose:$${{ env.Debug }} -InstallDependencies
+      - name: Run tests
+        shell: pwsh
+        run: |
+          ./Build.ps1 -Targets Test -Verbose:$${{ env.Debug }} -InstallDependencies
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            out/test-results.xml
       - name: Publish Portable
         uses: actions/upload-artifact@v4
         with:

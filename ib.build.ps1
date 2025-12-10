@@ -1,4 +1,4 @@
-#requires -module InvokeBuild, ModuleBuilder
+#requires -module InvokeBuild, ModuleBuilder, Pester
 
 #
 # WARNING: This file should not be executed directly.
@@ -26,8 +26,9 @@ task Build Clean, GetBuildNumber, {
     # Use ModuleBuilder to transpile individual .ps1 files into a single .psm1
     $buildParams = @{
         SourcePath = Join-Path $PSScriptRoot 'Source'
+        CopyPaths = @(Join-Path $PSScriptRoot 'Source/init.ps1')
     }
-    
+
     # Add SemVer parameter if BuildNumber is provided
     if ($BuildNumber) {
         Write-Host "Setting module version to $BuildNumber..."
@@ -42,41 +43,45 @@ task Build Clean, GetBuildNumber, {
 task GetBuildNumber {
     Write-Host "Getting build number..."
 
-    # Try to use GitVersion if available, fall back to simple versioning
-    $script:BuildNumber = "1.0.0"
-    
-    try {
-        # Check if GitVersion.Tool is installed
-        $gitVersionInstalled = $null -ne (dotnet tool list --global | Where-Object { $_ -match 'gitversion.tool' })
+    # Check if GitVersion.Tool is installed
+    $gitVersionInstalled = $null -ne (dotnet tool list --global | Where-Object { $_ -match 'gitversion.tool' })
 
-        if ($gitVersionInstalled) {
-            # Use GitVersion to get the SemVer
-            Write-Host "Running GitVersion..."
-            $gitVersionOutput = dotnet-gitversion 2>$null
-            
-            if ($gitVersionOutput) {
-                try {
-                    $gitVersionInfo = $gitVersionOutput | ConvertFrom-Json -ErrorAction Stop
-                    
-                    # Set the build number
-                    if($gitVersionInfo.PreReleaseLabel) {
-                        $preReleasePart = "-pre$($gitVersionInfo.WeightedPreReleaseNumber)"
-                    }
-                    
-                    $script:BuildNumber = $gitVersionInfo.MajorMinorPatch + $preReleasePart
-                    Write-Host "Build number from GitVersion: $BuildNumber"
-                }
-                catch {
-                    Write-Warning "Failed to parse GitVersion output, using default version"
-                    $script:BuildNumber = "1.0.0"
-                }
-            }
-        }
+    if (-not $gitVersionInstalled) {
+        Write-Error "GitVersion.Tool is not installed. Install it with: dotnet tool install --global GitVersion.Tool"
+        throw "Required tool GitVersion.Tool is not installed."
     }
-    catch {
-        Write-Warning "GitVersion not available, using default version"
-        $script:BuildNumber = "1.0.0"
+
+    $gitVersionCommand = Get-Command 'dotnet-gitversion' -ErrorAction SilentlyContinue
+    if (-not $gitVersionCommand) {
+        throw "GitVersion.Tool is installed but dotnet-gitversion is not on PATH. Add the dotnet global tool path to PATH and retry."
     }
+
+    # Use GitVersion to get the SemVer
+    Write-Host "Running GitVersion..."
+    # Handle case-sensitive file systems (Linux) where file name casing matters
+    $gitVersionConfig = Get-ChildItem -LiteralPath $PSScriptRoot -Filter 'GitVersion.yml' -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $gitVersionConfig) {
+        # Fallback to lowercase variant if repository chooses it
+        $lowerCasePath = Join-Path $PSScriptRoot 'gitversion.yml'
+        if (Test-Path $lowerCasePath) { $gitVersionConfig = Get-Item $lowerCasePath }
+    }
+
+    if ($gitVersionConfig) {
+        $gitVersionOutput = & $gitVersionCommand.Source /config $gitVersionConfig.FullName
+    }
+    else {
+        Write-Warning "GitVersion configuration file not found. Falling back to default GitVersion configuration."
+        $gitVersionOutput = & $gitVersionCommand.Source
+    }
+
+    $gitVersionInfo = $gitVersionOutput | ConvertFrom-Json
+
+    # Set the build number
+    if ($gitVersionInfo.PreReleaseLabel) {
+        $preReleasePart = "-pre$($gitVersionInfo.WeightedPreReleaseNumber)"
+    }
+
+    $script:BuildNumber = $gitVersionInfo.MajorMinorPatch + $preReleasePart
 
     Write-Host "Build number set to: $BuildNumber"
 
@@ -104,14 +109,17 @@ task Test Build, {
     $config.CodeCoverage.OutputPath = Join-Path $PSScriptRoot 'out/CodeCoverage.xml'
     $config.Output.Verbosity = 'Detailed'
     
-    $testResult = Invoke-Pester -Configuration $config
-    
-    if ($testResult.FailedCount -gt 0) {
-        Write-Host "Tests failed: $($testResult.FailedCount) of $($testResult.TotalCount)" -ForegroundColor Red
-        throw "Tests failed"
+    try {
+        $testResult = Invoke-Pester -Configuration $config
+
+        if ($testResult.FailedCount -gt 0) {
+            Write-Host "Tests failed: $($testResult.FailedCount) of $($testResult.TotalCount)" -ForegroundColor Red
+            throw "Tests failed"
+        }
     }
-    else {
-        Write-Host "All tests passed: $($testResult.TotalCount)" -ForegroundColor Green
+    catch {
+        Write-Error "Pester tests failed: $_"
+        throw
     }
 }
 

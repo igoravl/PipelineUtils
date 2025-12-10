@@ -41,7 +41,10 @@ function Write-PipelineWarning {
         [string]$IssueCode,
 
         [Parameter()]
-        [switch] $DoNotUpdateJobStatus
+        [switch] $ShowInSummary,
+
+        [Parameter()]
+        [switch] $UpdateTaskStatus
     )
     
     Write-PipelineLog -Message $Message -LogType 'Warning' -SourcePath $SourcePath -LineNumber $LineNumber -ColumnNumber $ColumnNumber -IssueCode $IssueCode -DoNotUpdateJobStatus:$DoNotUpdateJobStatus

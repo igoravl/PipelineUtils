@@ -32,43 +32,60 @@ cd PipelineUtils
 .\Build.ps1 -InstallDependencies
 ```
 
-## Cmdlets
+## Public Functions (Cmdlets)
 
-### Logging Commands
+| Function | Purpose |
+|----------|---------|
+| `Add-PipelineBuildTag` | Add a tag to the current build. |
+| `Add-PipelinePath` | Prepend a directory to PATH for later steps. |
+| `Add-PipelineSummary` | Publish a Markdown summary (string or file). |
+| `Add-PipelineTaskLogFile` | Upload one or more files into the task log (visible under Attachments). |
+| `Complete-PipelineTask` | Mark current task as completed with a status other than Succeeded (e.g. Failed, Skipped). |
+| `Set-PipelineBuildNumber` | Update the build number. |
+| `Set-PipelineReleaseNumber` | Update classic release name. |
+| `Set-PipelineSecretValue` | Mask a literal value in logs (does not create a variable). |
+| `Set-PipelineVariable` | Create/update a pipeline variable (supports `-Secret`, `-Output`, `-ReadOnly`). |
+| `Write-PipelineCommand` | Write a generic command/info log entry. |
+| `Write-PipelineDebug` | Write a debug message (alias: `Write-Debug`). |
+| `Write-PipelineError` | Emit an error log issue (alias: `Write-Error`). |
+| `Write-PipelineGroup` | Convenience wrapper executing a script block inside a group. |
+| `Write-PipelineGroupEnd` | End the current collapsible group. |
+| `Write-PipelineGroupStart` | Begin a collapsible log group. |
+| `Write-PipelineProgress` | Generic progress indicator (percent + activity). |
+| `Write-PipelineSection` | Output a formatted section header (optionally boxed). |
+| `Write-PipelineTaskProgress` | Task progress (operation + optional percent). |
+| `Write-PipelineWarning` | Emit a warning log issue (alias: `Write-Warning`). |
 
-- **`Write-PipelineWarning`** - Write warning messages to pipeline logs
-- **`Write-PipelineError`** - Write error messages to pipeline logs
-- **`Write-PipelineDebug`** - Write debug messages to pipeline logs
+### Formatting Commands
+
 - **`Write-PipelineCommand`** - Write command messages to pipeline logs
-- **`Write-PipelineTaskProgress`** - Update task progress indicators
-- **`Write-PipelineSection`** - Create sections in logs
+- **`Write-PipelineDebug`** - Write debug messages to pipeline logs
+- **`Write-PipelineError`** - Write error messages to pipeline logs
 - **`Write-PipelineProgress`** - Report progress with percentage
+- **`Write-PipelineSection`** - Create sections in logs
+- **`Write-PipelineTaskProgress`** - Update task progress indicators
+- **`Write-PipelineWarning`** - Write warning messages to pipeline logs
 
 ### Grouping Commands
 
-- **`Write-PipelineGroupStart`** - Start a collapsible group in logs
-- **`Write-PipelineGroupEnd`** - End a collapsible group in logs
 - **`Write-PipelineGroup`** - Create a collapsible group with a script block
+- **`Write-PipelineGroupEnd`** - End a collapsible group in logs
+- **`Write-PipelineGroupStart`** - Start a collapsible group in logs
 
-### Variable Management
+## Usage Examples
 
-- **`Set-PipelineVariable`** - Set pipeline variables (including secrets and output variables)
 - **`Set-PipelineSecretValue`** - Mask a value as secret in logs
+- **`Set-PipelineVariable`** - Set pipeline variables (including secrets and output variables)
 
 ### Build Management
 
 - **`Add-PipelineBuildTag`** - Add tags to the current build/run
-- **`Set-PipelineBuildNumber`** - Set the build/run number
-- **`Set-PipelineReleaseNumber`** - Set the release name (Azure DevOps only)
-- **`Add-PipelineSummary`** - Add Markdown summary to the pipeline run
 - **`Add-PipelinePath`** - Add a directory to the PATH environment variable
+- **`Add-PipelineSummary`** - Add Markdown summary to the pipeline run
 - **`Add-PipelineTaskLogFile`** - Upload a log file (Azure DevOps only)
 - **`Complete-PipelineTask`** - Mark task completion with status (Azure DevOps only)
-
-### Utility Functions
-
-- **`Test-PipelineContext`** (Private) - Detect CI/CD pipeline context
-- **`Get-PipelineType`** (Private) - Get the current pipeline type (Azure DevOps or GitHub Actions)
+- **`Set-PipelineBuildNumber`** - Set the build/run number
+- **`Set-PipelineReleaseNumber`** - Set the release name (Azure DevOps only)
 
 ## Examples
 
@@ -140,9 +157,9 @@ Write-PipelineSection -Text "Deployment" -Boxed
 
 ## Development
 
-### Building the Module
+### Build / Test / Package
 
-This project uses [ModuleBuilder](https://github.com/PoshCode/ModuleBuilder) and [Invoke-Build](https://github.com/nightroman/Invoke-Build) for the build process.
+This project uses [ModuleBuilder](https://github.com/PoshCode/ModuleBuilder) and [Invoke-Build](https://github.com/nightroman/Invoke-Build).
 
 ```powershell
 # Build the module (installs dependencies automatically)
@@ -185,7 +202,7 @@ PipelineUtils/
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License. See [LICENSE](LICENSE).
 
 ## Platform-Specific Behavior
 

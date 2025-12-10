@@ -1,1 +1,1 @@
-﻿$global:_task_status = 'Succeeded'
+﻿

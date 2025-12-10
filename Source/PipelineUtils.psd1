@@ -9,13 +9,13 @@
     PowerShellVersion = '5.1'
     RequiredModules = @()
     RequiredAssemblies = @()
-    ScriptsToProcess = @()
+    ScriptsToProcess = @('init.ps1')
     TypesToProcess = @()
     FormatsToProcess = @()
     NestedModules = @()
     FunctionsToExport = @()
-    CmdletsToExport = '*'
-    VariablesToExport = '*'
+    CmdletsToExport = @()
+    VariablesToExport = @()
     AliasesToExport = '*'
     DscResourcesToExport = @()
     ModuleList = @()
