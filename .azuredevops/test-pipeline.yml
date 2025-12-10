@@ -70,7 +70,7 @@ jobs:
             }
             
             Write-Host "`n2. Output Variables:" -ForegroundColor Yellow
-            $outputVar = $env:OUTPUT_VAR
+            $outputVar = '$(Showcase.OUTPUT_VAR)'
             if ($outputVar) {
               Write-Host "   ✅ OUTPUT_VAR = $outputVar" -ForegroundColor Green
             }
