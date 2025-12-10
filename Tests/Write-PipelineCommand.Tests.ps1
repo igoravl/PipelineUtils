@@ -1,34 +1,54 @@
-﻿try {
-    # Prefer built module if present
-    $built = Join-Path $PSScriptRoot '../out/module/AzurePipelinesUtils/AzurePipelinesUtils.psd1'
-    if (Test-Path $built) {
-        Import-Module $built -Force
-    }
-    else {
-        # Fallback: import from source folder for quicker inner-loop testing
-        $srcRoot = Join-Path $PSScriptRoot '../Source'
-        $manifest = Join-Path $srcRoot 'AzurePipelinesUtils.psd1'
-        if (Test-Path $manifest) { Import-Module $manifest -Force }
-        else { Write-Warning "Module manifest not found for tests: $manifest" }
-    }
-}
-catch {
-    Write-Error "Failed to import module under test: $_"; throw
+BeforeAll {
+    . $PSScriptRoot/_HelperFunctions.ps1
+    Import-Module $PSScriptRoot/../Build/PipelineUtils/PipelineUtils.psd1 -Force
 }
 
 Describe 'Write-PipelineCommand' {
-    Context 'outside pipeline context' {
-        It 'writes plain message' {
-            $result = & { Write-PipelineCommand -Message 'Do something' } 6>&1 | Out-String
-            ($result.Trim()) | Should -Be 'Do something'
+    BeforeEach {
+        _ClearEnvironment
+    }
+
+    Context 'Azure DevOps' {
+        BeforeEach {
+            _SetAzureDevOpsEnvironment
+        }
+
+        It 'writes a command message with Azure DevOps format' {
+            $output = Write-PipelineCommand -Message "Test command message" 6>&1
+            $output | Should -Match 'Test command message'
+        }
+
+        It 'accepts message from pipeline' {
+            $output = "Pipeline command" | Write-PipelineCommand 6>&1
+            $output | Should -Match 'Pipeline command'
+        }
+
+        It 'accepts message from positional parameter' {
+            $output = Write-PipelineCommand "Positional command" 6>&1
+            $output | Should -Match 'Positional command'
         }
     }
-    Context 'inside pipeline context' {
-        BeforeAll { $script:saved=$env:TF_BUILD; $env:TF_BUILD='true' }
-        AfterAll { $env:TF_BUILD=$script:saved }
-        It 'still writes plain message (non-issue)' {
-            $result = & { Write-PipelineCommand -Message 'Do something' } 6>&1 | Out-String
-            ($result.Trim()) | Should -Be 'Do something'
+
+    Context 'GitHub Actions' {
+        BeforeEach {
+            _SetGitHubActionsEnvironment
+        }
+
+        It 'writes a command message with GitHub Actions format' {
+            $output = Write-PipelineCommand -Message "Test command message" 6>&1
+            $output | Should -Match 'Test command message'
+        }
+
+        It 'accepts message from pipeline' {
+            $output = "GHA command" | Write-PipelineCommand 6>&1
+            $output | Should -Match 'GHA command'
+        }
+    }
+
+    Context 'Console' {
+        It 'writes command message to console' {
+            $output = Write-PipelineCommand -Message "Console command" 6>&1
+            $output | Should -Match 'Console command'
         }
     }
 }

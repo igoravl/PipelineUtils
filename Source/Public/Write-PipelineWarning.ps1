@@ -47,10 +47,8 @@ function Write-PipelineWarning {
         [switch] $UpdateTaskStatus
     )
     
-    _WriteLog -Message $Message -LogType Warning -SourcePath $SourcePath -LineNumber $LineNumber -ColumnNumber $ColumnNumber -IssueCode $IssueCode -ShowInSummary:$ShowInSummary -UpdateTaskStatus:$UpdateTaskStatus
+    Write-PipelineLog -Message $Message -LogType 'Warning' -SourcePath $SourcePath -LineNumber $LineNumber -ColumnNumber $ColumnNumber -IssueCode $IssueCode -DoNotUpdateJobStatus:$DoNotUpdateJobStatus
 }
 
 # Alias
-if (_TestPipelineContext) {
-    Set-Alias -Name 'Write-Warning' -Value 'Write-PipelineWarning' -Force -Scope Global
-}
+# Set-Alias -Name 'Write-Warning' -Value 'Write-PipelineWarning' -Force -Scope Global

@@ -8,9 +8,9 @@
         [scriptblock]$Body
     )
 
-    Write-PipelineGroupBegin $Header
+    Write-PipelineGroupStart $Header
 
-    (& $Body) | ForEach-Object { Write-Log $_ }
+    (& $Body) | ForEach-Object { Write-Host $_ }
 
     Write-PipelineGroupEnd
 }

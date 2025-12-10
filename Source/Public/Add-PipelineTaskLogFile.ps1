@@ -31,6 +31,15 @@ Function Add-PipelineTaskLogFile {
         $Path
     )
 
+    Begin {
+        $pipelineType = Get-PipelineType
+        
+        if($pipelineType -ne [PipelineType]::AzureDevOps) {
+            Write-Warning "Add-PipelineTaskLogFile is only supported in Azure DevOps pipelines."
+            return
+        }
+    }
+
     Process {
         foreach ($filePath in $Path) {
             # Resolve the path to ensure it's absolute

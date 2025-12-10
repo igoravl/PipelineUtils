@@ -22,4 +22,4 @@ Function Write-PipelineDebug {
     _WriteLog -Message $Message -LogType Debug
 }
 
-Set-Alias -Name 'Write-Debug' -Value 'Write-PipelineDebug' -Force -Scope Global
+# Set-Alias -Name 'Write-Debug' -Value 'Write-PipelineDebug' -Force -Scope Global

@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-Adds a Markdown summary to Azure DevOps Pipelines.
+Adds a Markdown summary to CI/CD pipelines.
 
 .DESCRIPTION
-This function adds a Markdown formatted summary to the pipeline run using Azure DevOps Pipelines logging commands.
+This function adds a Markdown formatted summary to the pipeline run using Azure DevOps or GitHub Actions logging commands.
 Summaries appear in the pipeline run details and help provide additional information or context about the build.
 
 .PARAMETER Content
@@ -41,19 +41,27 @@ function Add-PipelineSummary {
             if (-not (Test-Path -Path $Path)) {
                 throw "The specified path '$Path' does not exist."
             }
+            $summaryPath = $Path
         }
         else {
             # Write the content to a temporary file
-            $Path = [System.IO.Path]::GetTempFileName() + ".md"
-            Set-Content -Path $Path -Value $Content -Encoding UTF8
+            $summaryPath = [System.IO.Path]::GetTempFileName() + ".md"
+            Set-Content -Path $summaryPath -Value $Content -Encoding UTF8
         }
 
-        if ((_TestPipelineContext)) {
-            Write-Host "##vso[task.uploadsummary]$Path"
-        }
-        else {
-            Write-PipelineSection "Pipeline Summary"
-            Get-Content -Path $Path | Write-Host
+        $pipelineType = Get-PipelineType
+        
+        switch ($pipelineType) {
+            ([PipelineType]::AzureDevOps) {
+                Write-Host "##vso[task.uploadsummary]$summaryPath"
+            }
+            ([PipelineType]::GitHubActions) {
+                # Append to the GitHub Actions step summary
+                Get-Content -Path $summaryPath | Add-Content -Path $env:GITHUB_STEP_SUMMARY
+            }
+            default {
+                Get-Content -Path $summaryPath | Write-Host
+            }
         }
     }
 }

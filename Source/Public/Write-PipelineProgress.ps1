@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-Writes a progress message in Azure DevOps Pipelines.
+Writes a progress message in CI/CD pipelines.
 
 .DESCRIPTION
-This function writes a progress message using Azure DevOps Pipelines logging commands.
+This function writes a progress message using the appropriate logging commands for the detected pipeline.
 It can be used to show progress status during pipeline execution, including 
 percentage completion values.
 
@@ -41,12 +41,19 @@ function Write-PipelineProgress {
         [string]$Activity
     )
 
-    if ((_TestPipelineContext)) {
-        # Using Azure DevOps Pipelines task progress command
-        Write-Output "##vso[task.setprogress value=$PercentComplete;]$Activity - $PercentComplete%"
-    }
-    else {
-        # If not in a pipeline, use standard PowerShell Write-Progress
-        Write-Progress -Activity $Activity -PercentComplete $PercentComplete
+    $pipelineType = Get-PipelineType
+    
+    switch ($pipelineType) {
+        ([PipelineType]::AzureDevOps) {
+            Write-Output "##vso[task.setprogress value=$PercentComplete;]$Activity - $PercentComplete%"
+        }
+        ([PipelineType]::GitHubActions) {
+            # GitHub Actions doesn't have native progress bars, use notice
+            Write-Output "::notice::$Activity - $PercentComplete% complete"
+        }
+        default {
+            # If not in a pipeline, use standard PowerShell Write-Progress
+            Write-Progress -Activity $Activity -PercentComplete $PercentComplete
+        }
     }
 }

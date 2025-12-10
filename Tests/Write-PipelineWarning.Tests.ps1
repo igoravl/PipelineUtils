@@ -1,32 +1,60 @@
-﻿Import-Module "$PSScriptRoot/../out/module/AzurePipelinesUtils/AzurePipelinesUtils.psd1" -Force
+# Import module before any Pester blocks to ensure it's available during discovery phase
+Import-Module "$PSScriptRoot\..\Build\PipelineUtils\PipelineUtils.psd1" -Force
 
 Describe 'Write-PipelineWarning' {
-    Context 'outside pipeline context' {
-        BeforeAll { $script:saved=$env:TF_BUILD; $env:TF_BUILD=$null }
-        AfterAll { $env:TF_BUILD=$script:saved }
-        It 'writes warning logissue line' {
-            $result = & { Write-PipelineWarning -Message 'Test warning' } 6>&1 | Out-String
-            $result -match '##vso\[task\.logissue type=warning\]Test warning' | Should -Be $true
+    Context 'Azure DevOps' {
+        BeforeAll {
+            . $PSScriptRoot/_HelperFunctions.ps1
+            _SetAzureDevOpsEnvironment
+        }
+        
+        It 'writes a warning with Azure DevOps format' {
+            $output = Write-PipelineWarning -Message 'Test warning' 6>&1
+            $output | Should -Be '##vso[task.logissue type=warning;]Test warning'
+        }
+        
+        It 'includes source path when provided' {
+            $output = Write-PipelineWarning -Message 'Test warning' -SourcePath 'test.ps1' 6>&1
+            $output | Should -Be '##vso[task.logissue type=warning;sourcepath=test.ps1;]Test warning'
+        }
+        
+        It 'includes line number when provided' {
+            $output = Write-PipelineWarning -Message 'Test warning' -LineNumber 42 6>&1
+            $output | Should -Be '##vso[task.logissue type=warning;linenumber=42;]Test warning'
+        }
+        
+        It 'includes source path and line number when provided' {
+            $output = Write-PipelineWarning -Message 'Test warning' -SourcePath 'test.ps1' -LineNumber 42 6>&1
+            $output | Should -Be '##vso[task.logissue type=warning;sourcepath=test.ps1;linenumber=42;]Test warning'
         }
     }
-    Context 'inside pipeline context' {
-        BeforeAll { $script:saved=$env:TF_BUILD; $env:TF_BUILD='true' }
-        AfterAll { $env:TF_BUILD=$script:saved }
-        It 'writes base warning' {
-            $result = & { Write-PipelineWarning -Message 'Test warning' } 6>&1 | Out-String
-            $result -match '##vso\[task\.logissue type=warning\]Test warning' | Should -Be $true
+    
+    Context 'GitHub Actions' {
+        BeforeAll {
+            . $PSScriptRoot/_HelperFunctions.ps1
+            _SetGitHubActionsEnvironment
         }
-        It 'includes source path' {
-            $result = & { Write-PipelineWarning -Message 'Test warning' -SourcePath 'test.ps1' } 6>&1 | Out-String
-            $result -match '##vso\[task\.logissue type=warning;sourcepath=test\.ps1\]Test warning' | Should -Be $true
+        
+        It 'writes a warning with GitHub Actions format' {
+            $output = Write-PipelineWarning -Message 'Test warning' 6>&1
+            $output | Should -Be '::warning::Test warning'
         }
-        It 'includes line number' {
-            $result = & { Write-PipelineWarning -Message 'Test warning' -LineNumber 42 } 6>&1 | Out-String
-            $result -match '##vso\[task\.logissue type=warning;linenumber=42\]Test warning' | Should -Be $true
+        
+        It 'includes file annotation when provided' {
+            $output = Write-PipelineWarning -Message 'Test warning' -SourcePath 'test.ps1' -LineNumber 42 6>&1
+            $output | Should -Be '::warning file=test.ps1,line=42::Test warning'
         }
-        It 'includes source path and line number' {
-            $result = & { Write-PipelineWarning -Message 'Test warning' -SourcePath 'test.ps1' -LineNumber 42 } 6>&1 | Out-String
-            $result -match '##vso\[task\.logissue type=warning;sourcepath=test\.ps1;linenumber=42\]Test warning' | Should -Be $true
+    }
+    
+    Context 'Console' {
+        BeforeAll {
+            . $PSScriptRoot/_HelperFunctions.ps1
+            _ClearEnvironment
+        }
+        
+        It 'writes a warning to console' {
+            $output = Write-PipelineWarning -Message 'Test warning' 6>&1
+            $output | Should -BeLike '*Test warning*'
         }
     }
 }

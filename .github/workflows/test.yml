@@ -1,0 +1,80 @@
+name: Test & Showcase
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  showcase:
+    name: Showcase All Commands
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup PowerShell
+        shell: pwsh
+        run: |
+          Write-Host "##[section]PowerShell Version: $($PSVersionTable.PSVersion)"
+      
+      - name: Build Module
+        shell: pwsh
+        run: |
+          Write-Host "Building PipelineUtils module..." -ForegroundColor Cyan
+          & "${{ github.workspace }}/Build.ps1" -InstallDependencies
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Build failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          Write-Host "Build completed successfully" -ForegroundColor Green
+      
+      - name: Showcase PipelineUtils Commands
+        id: showcase
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/Tests/Invoke-ShowcaseCommands.ps1" `
+            -WorkspacePath "${{ github.workspace }}" `
+            -RunnerOS "${{ runner.os }}" `
+            -RunnerName "${{ runner.name }}"
+      
+      - name: Verify Variables and PATH
+        shell: pwsh
+        run: |
+          Write-Host "== Verification: Variables, PATH and Outputs ==" -ForegroundColor Cyan
+          
+          Write-Host "`n1. Environment Variables:" -ForegroundColor Yellow
+          if ($env:SHOWCASE_VAR) {
+            Write-Host "   ✅ SHOWCASE_VAR = $env:SHOWCASE_VAR" -ForegroundColor Green
+          }
+          else {
+            Write-Host "   ℹ️  SHOWCASE_VAR not found (variables don't persist across steps)" -ForegroundColor Cyan
+          }
+          
+          Write-Host "`n2. Output Variables:" -ForegroundColor Yellow
+          $outputVar = "${{ steps.showcase.outputs.OUTPUT_VAR }}"
+          if ($outputVar) {
+            Write-Host "   ✅ OUTPUT_VAR = $outputVar" -ForegroundColor Green
+          }
+          else {
+            Write-Host "   ⚠️  OUTPUT_VAR not found in step outputs" -ForegroundColor Yellow
+          }
+          
+          Write-Host "`n3. All Environment Variables Count:" -ForegroundColor Yellow
+          Write-Host "   $($(Get-ChildItem -Path Env:).Count) environment variables found" -ForegroundColor Cyan
+          
+          Write-Host "`n4. Tools Path in PATH:" -ForegroundColor Yellow
+          $toolsPath = "${{ github.workspace }}/build"
+          $pathDirs = $env:PATH -split [IO.Path]::PathSeparator
+          if ($pathDirs -contains $toolsPath) {
+            Write-Host "   ✅ Tools path added: $toolsPath" -ForegroundColor Green
+          }
+          else {
+            Write-Host "   ℹ️  Tools path not in current step (added in previous step)" -ForegroundColor Cyan
+          }
+          
+          Write-Host "`n✅ Verification complete`n" -ForegroundColor Green
+

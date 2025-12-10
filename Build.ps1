@@ -54,6 +54,21 @@ if (-not (Get-Module -ListAvailable -Name ModuleBuilder)) {
     }
 }
 
+# Verifies Pester module
+if (-not (Get-Module -ListAvailable -Name Pester | Where-Object Version -ge '5.0.0')) {
+    Write-Warning "Pester module version 5.0.0 or higher not found."
+    
+    if ($InstallDependencies -or $PSCmdlet.ShouldContinue("Pester module version 5.0.0 or higher is required for building. Would you like to install it?", "Install Pester")) {
+        Write-Host "Installing Pester module..." -ForegroundColor Cyan
+        Install-Module -Name Pester -Scope CurrentUser -Force -AllowClobber -Verbose:$Verbose.IsPresent
+        Write-Host "Pester module installed successfully." -ForegroundColor Green
+    }
+    else {
+        Write-Error "The Pester module version 5.0.0 or higher is required to continue. Run the script again with the -InstallDependencies parameter to install automatically."
+        return
+    }
+}
+
 # Verifies GitVersion.Tool installation
 $gitVersionInstalled = $null -ne (Get-Command 'dotnet-gitversion' -ErrorAction SilentlyContinue)
 if (-not $gitVersionInstalled) {

@@ -8,27 +8,21 @@ function Write-PipelineError {
         [string]$SourcePath,
         
         [Parameter(Mandatory = $false)]
-        [int]$LineNumber
+        [int]$LineNumber,
+
+        [Parameter()]
+        [int]$ColumnNumber,
+
+        [Parameter()]
+        [Alias('Code')]
+        [string]$IssueCode,
+
+        [Parameter()]
+        [switch] $DoNotUpdateJobStatus
     )
     
-    if ((_TestPipelineContext)) {
-        $prefix = '##[warning] ' 
-    }
-    
-    if ($UpdateTaskStatus.IsPresent) {
-        Write-Host "${prefix}$Message" -ForegroundColor Yellow
-        return
-    }
-    
-    $properties = ''
-
-    if ($SourcePath) { $properties += ";sourcepath=$SourcePath" }
-    if ($LineNumber) { $properties += ";linenumber=$LineNumber" }
-
-    Write-Host "##vso[task.logissue type=error$properties]$Message"
+    Write-PipelineLog -Message $Message -LogType 'Error' -SourcePath $SourcePath -LineNumber $LineNumber -ColumnNumber $ColumnNumber -IssueCode $IssueCode -DoNotUpdateJobStatus:$DoNotUpdateJobStatus
 }
 
 # Alias
-if (_TestPipelineContext) {
-    Set-Alias -Name 'Write-Error' -Value 'Write-PipelineError' -Force -Scope Global
-}
+# Set-Alias -Name 'Write-Error' -Value 'Write-PipelineError' -Force -Scope Global

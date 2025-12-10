@@ -1,16 +1,67 @@
-﻿Import-Module "$PSScriptRoot/../out/module/AzurePipelinesUtils/AzurePipelinesUtils.psd1" -Force
+BeforeAll {
+    . $PSScriptRoot/_HelperFunctions.ps1
+    Import-Module $PSScriptRoot/../Build/PipelineUtils/PipelineUtils.psd1 -Force
+}
 
 Describe 'Set-PipelineReleaseNumber' {
-    It 'outputs friendly text when not in pipeline context' {
-        $saved = $env:TF_BUILD; $env:TF_BUILD=$null
-        try {
-            (Set-PipelineReleaseNumber -ReleaseNumber '9.8.7') | Should -Be 'Release name: 9.8.7'
-        } finally { $env:TF_BUILD = $saved }
+    BeforeEach {
+        _ClearEnvironment
     }
-    It 'outputs vso command when in pipeline context' {
-        $saved = $env:TF_BUILD; $env:TF_BUILD='true'
-        try {
-            (Set-PipelineReleaseNumber -ReleaseNumber '9.8.7') | Should -Be '##vso[release.updatereleasename]9.8.7'
-        } finally { $env:TF_BUILD = $saved }
+
+    Context 'Azure DevOps' {
+        BeforeEach {
+            _SetAzureDevOpsEnvironment
+        }
+
+        It 'shows warning and changes build number when in Build pipeline (not Release)' {
+            $warn = $null
+            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42" -WarningVariable warn -WarningAction SilentlyContinue 6>&1 5>&1
+            $warn | Should -BeLike '*Set-PipelineReleaseNumber is only supported in Azure DevOps Release pipelines*'
+            $output -match '##vso\[build\.updatebuildnumber\]1\.0\.42' | Should -Be $true
+        }
+    }
+
+    Context 'Azure DevOps Release' {
+        BeforeEach {
+            _SetAzureDevOpsReleaseEnvironment
+        }
+
+        It 'sets release number with Azure DevOps format' {
+            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42"
+            $output | Should -Be "##vso[release.updatereleasename]1.0.42"
+        }
+
+        It 'accepts release number from parameter' {
+            $releaseNum = "2024.12.05.1"
+            $output = Set-PipelineReleaseNumber -ReleaseNumber $releaseNum
+            $output | Should -Be "##vso[release.updatereleasename]$releaseNum"
+        }
+
+        It 'accepts release number from positional parameter' {
+            $output = Set-PipelineReleaseNumber "3.0.0"
+            $output | Should -Be "##vso[release.updatereleasename]3.0.0"
+        }
+    }
+
+    Context 'GitHub Actions' {
+        BeforeEach {
+            _SetGitHubActionsEnvironment
+        }
+
+        It 'shows warning and returns early when not in Azure DevOps' {
+            $warn = $null
+            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42" -WarningVariable warn -WarningAction SilentlyContinue
+                $warn | Should -BeLike '*Set-PipelineReleaseNumber is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
+        }
+    }
+
+    Context 'Console' {
+        It 'shows warning and returns early when not in Azure DevOps' {
+            $warn = $null
+            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42" -WarningVariable warn -WarningAction SilentlyContinue
+                $warn | Should -BeLike '*Set-PipelineReleaseNumber is only supported in Azure DevOps pipelines.*'
+            $output | Should -BeNullOrEmpty
+        }
     }
 }

@@ -1,18 +1,54 @@
-﻿Import-Module "$PSScriptRoot/../out/module/AzurePipelinesUtils/AzurePipelinesUtils.psd1" -Force
+BeforeAll {
+    . $PSScriptRoot/_HelperFunctions.ps1
+    Import-Module $PSScriptRoot/../Build/PipelineUtils/PipelineUtils.psd1 -Force
+}
 
 Describe 'Write-PipelineDebug' {
-    Context 'outside pipeline context' {
-        It 'writes plain debug message' {
-            $result = & { Write-PipelineDebug -Message 'Debug details' } 6>&1 | Out-String
-            $result.Trim() | Should -Be 'Debug details'
+    BeforeEach {
+        _ClearEnvironment
+    }
+
+    Context 'Azure DevOps' {
+        BeforeEach {
+            _SetAzureDevOpsEnvironment
+        }
+
+        It 'writes a debug message with Azure DevOps format' {
+            $output = Write-PipelineDebug -Message "Test debug message" 6>&1
+            $output | Should -Match '##\[debug\]Test debug message'
+        }
+
+        It 'accepts message from pipeline' {
+            $output = "Pipeline debug" | Write-PipelineDebug 6>&1
+            $output | Should -Match '##\[debug\]Pipeline debug'
+        }
+
+        It 'accepts message from positional parameter' {
+            $output = Write-PipelineDebug "Positional debug" 6>&1
+            $output | Should -Match '##\[debug\]Positional debug'
         }
     }
-    Context 'inside pipeline context' {
-        BeforeAll { $script:saved=$env:TF_BUILD; $env:TF_BUILD='true' }
-        AfterAll { $env:TF_BUILD=$script:saved }
-        It 'writes same debug message' {
-            $result = & { Write-PipelineDebug -Message 'Debug details' } 6>&1 | Out-String
-            $result.Trim() | Should -Be 'Debug details'
+
+    Context 'GitHub Actions' {
+        BeforeEach {
+            _SetGitHubActionsEnvironment
+        }
+
+        It 'writes a debug message with GitHub Actions format' {
+            $output = Write-PipelineDebug -Message "Test debug message" 6>&1
+            $output | Should -Match '::debug::Test debug message'
+        }
+
+        It 'accepts message from pipeline' {
+            $output = "GHA debug" | Write-PipelineDebug 6>&1
+            $output | Should -Match '::debug::GHA debug'
+        }
+    }
+
+    Context 'Console' {
+        It 'writes debug message to console' {
+            $output = Write-PipelineDebug -Message "Console debug" 6>&1
+            $output | Should -Match 'Console debug'
         }
     }
 }

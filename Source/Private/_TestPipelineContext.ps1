@@ -1,31 +1,20 @@
-# Private helper function to validate Azure Pipelines context
-function _TestPipelineContext {
+# Private helper function to validate pipeline context
+function Test-PipelineContext {
     <#
     .SYNOPSIS
-    Tests if the current session is running in an Azure DevOps Pipeline.
+    Tests if the current session is running in a CI/CD pipeline (Azure DevOps or GitHub Actions).
     
     .DESCRIPTION
-    This private function checks for the presence of Azure DevOps environment variables
-    to determine if the code is running within a pipeline context.
+    This private function checks for the presence of environment variables specific to
+    Azure DevOps or GitHub Actions to determine if the code is running within a pipeline context.
     
     .OUTPUTS
-    [bool] Returns $true if running in Azure Pipelines, $false otherwise.
+    [bool] Returns $true if running in a supported pipeline, $false otherwise.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param()
     
-    $azureDevOpsVariables = @(
-        'TF_BUILD',
-        'AGENT_ID',
-        'BUILD_BUILDID'
-    )
-    
-    foreach ($variable in $azureDevOpsVariables) {
-        if (Get-Item -Path "Env:$variable" -ErrorAction SilentlyContinue) {
-            return $true
-        }
-    }
-    
-    return $false
+    $pipelineType = Get-PipelineType
+    return ($pipelineType -ne [PipelineType]::Unknown)
 }
