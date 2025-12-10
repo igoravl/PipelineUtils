@@ -29,5 +29,12 @@ function Set-PipelineReleaseNumber {
         return
     }
     
+    # Check if we're in a Release pipeline (not a Build pipeline)
+    if (-not $Env:RELEASE_RELEASEID) {
+        Write-Warning "Set-PipelineReleaseNumber is only supported in Azure DevOps Release pipelines. Setting the build number instead."
+        Set-PipelineBuildNumber -BuildNumber $ReleaseNumber
+        return
+    }
+    
     Write-Output "##vso[release.updatereleasename]$ReleaseNumber"
 }

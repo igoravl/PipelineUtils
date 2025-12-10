@@ -2,6 +2,7 @@
         $env:TF_BUILD = $null
         $env:AGENT_ID = $null
         $env:BUILD_BUILDID = $null
+        $env:RELEASE_RELEASEID = $null
         $env:GITHUB_ACTIONS = $null
         $env:GITHUB_WORKFLOW = $null
         $env:GITHUB_RUN_ID = $null
@@ -15,6 +16,12 @@
     function _SetAzureDevOpsEnvironment {
         _ClearEnvironment
         $env:TF_BUILD = 'true'
+    }
+    
+    # Helper function to set Azure DevOps Release environment
+    function _SetAzureDevOpsReleaseEnvironment {
+        _SetAzureDevOpsEnvironment
+        $env:RELEASE_RELEASEID = '123'
     }
     
     # Helper function to set GitHub Actions environment
