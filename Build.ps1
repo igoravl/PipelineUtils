@@ -24,6 +24,19 @@ else {
     $VerbosePreference = 'SilentlyContinue'
 }
 
+# Ensure dotnet global tool paths are available in the current session
+$dotnetToolPaths = @(
+    Join-Path $env:USERPROFILE '.dotnet\tools'
+    (Join-Path $env:LOCALAPPDATA 'Microsoft\dotnet\tools')
+) | Where-Object { $_ -and (Test-Path $_) }
+
+foreach ($path in $dotnetToolPaths) {
+    if (-not ($env:PATH -split ';' | Where-Object { $_ -eq $path })) {
+        $env:PATH = "$path;$env:PATH"
+        Write-Verbose "Added dotnet tool path to PATH: $path"
+    }
+}
+
 # Verifies InvokeBuild module
 if (-not (Get-Module -ListAvailable -Name InvokeBuild)) {
     Write-Warning "InvokeBuild module not found."

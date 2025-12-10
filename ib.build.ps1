@@ -51,6 +51,11 @@ task GetBuildNumber {
         throw "Required tool GitVersion.Tool is not installed."
     }
 
+    $gitVersionCommand = Get-Command 'dotnet-gitversion' -ErrorAction SilentlyContinue
+    if (-not $gitVersionCommand) {
+        throw "GitVersion.Tool is installed but dotnet-gitversion is not on PATH. Add the dotnet global tool path to PATH and retry."
+    }
+
     # Use GitVersion to get the SemVer
     Write-Host "Running GitVersion..."
     # Handle case-sensitive file systems (Linux) where file name casing matters
@@ -62,11 +67,11 @@ task GetBuildNumber {
     }
 
     if ($gitVersionConfig) {
-        $gitVersionOutput = dotnet-gitversion /config $gitVersionConfig.FullName
+        $gitVersionOutput = & $gitVersionCommand.Source /config $gitVersionConfig.FullName
     }
     else {
         Write-Warning "GitVersion configuration file not found. Falling back to default GitVersion configuration."
-        $gitVersionOutput = dotnet-gitversion
+        $gitVersionOutput = & $gitVersionCommand.Source
     }
 
     $gitVersionInfo = $gitVersionOutput | ConvertFrom-Json
@@ -104,11 +109,13 @@ task Test Build, {
     $config.CodeCoverage.OutputPath = Join-Path $PSScriptRoot 'out/CodeCoverage.xml'
     $config.Output.Verbosity = 'Detailed'
     
-    $testResult = Invoke-Pester -Configuration $config
-    
-    if ($testResult.FailedCount -gt 0) {
-        Write-Host "Tests failed: $($testResult.FailedCount) of $($testResult.TotalCount)" -ForegroundColor Red
-        throw "Tests failed"
+    try {
+        $testResult = Invoke-Pester -Configuration $config
+
+        if ($testResult.FailedCount -gt 0) {
+            Write-Host "Tests failed: $($testResult.FailedCount) of $($testResult.TotalCount)" -ForegroundColor Red
+            throw "Tests failed"
+        }
     }
     catch {
         Write-Error "Pester tests failed: $_"
