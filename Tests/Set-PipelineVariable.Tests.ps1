@@ -64,7 +64,7 @@ Describe 'Set-PipelineVariable' {
         
         It 'warns about secret flag not being applicable' {
             $output = Set-PipelineVariable -Name 'SecretVar' -Value 'SecretValue' -Secret 6>&1
-            $output | Should -BeLike '*Secret flag is not applicable in GitHub Actions*'
+            $output -join ' ' | Should -BeLike '*Secret flag is not applicable in GitHub Actions*'
         }
 
         It 'warns about readonly flag not being applicable' {
@@ -81,9 +81,9 @@ Describe 'Set-PipelineVariable' {
             _ClearEnvironment
         }
         
-        It 'warns when not in a pipeline context' {
-            $output = Set-PipelineVariable -Name 'TestVar' -Value 'TestValue' 6>&1
-            $output | Should -BeLike '*Not running in a supported pipeline environment*'
+        It 'sets variable in environment when not in a pipeline context' {
+            Set-PipelineVariable -Name 'TestVar' -Value 'TestValue'
+            $env:TestVar | Should -Be 'TestValue'
         }
     }
 }

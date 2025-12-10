@@ -87,9 +87,9 @@ function Write-PipelineLog {
             switch ($LogType) {
                 'error'   { $prefix = '::error'; $suffix = '::'; $ghaSupportsProps = $true }
                 'warning' { $prefix = '::warning'; $suffix = '::'; $ghaSupportsProps = $true }
-                'info'    { $prefix = '::notice'; $suffix = '::'; $ghaSupportsProps = $true }
                 'debug'   { $prefix = '::debug::'; $suffix = '' }
-                'command' { $prefix = '::notice title=command::'; $suffix = '' }
+                'command' { $prefix = '##[command]'; $suffix = '' }
+                'info'    { $prefix = '::notice'; $suffix = '::'; $ghaSupportsProps = $true }
             }
         }
         else {

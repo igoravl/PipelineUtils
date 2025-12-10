@@ -13,6 +13,19 @@ Describe 'Set-PipelineReleaseNumber' {
             _SetAzureDevOpsEnvironment
         }
 
+        It 'shows warning and changes build number when in Build pipeline (not Release)' {
+            $warn = $null
+            $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42" -WarningVariable warn -WarningAction SilentlyContinue 6>&1 5>&1
+            $warn | Should -BeLike '*Set-PipelineReleaseNumber is only supported in Azure DevOps Release pipelines*'
+            $output -match '##vso\[build\.updatebuildnumber\]1\.0\.42' | Should -Be $true
+        }
+    }
+
+    Context 'Azure DevOps Release' {
+        BeforeEach {
+            _SetAzureDevOpsReleaseEnvironment
+        }
+
         It 'sets release number with Azure DevOps format' {
             $output = Set-PipelineReleaseNumber -ReleaseNumber "1.0.42"
             $output | Should -Be "##vso[release.updatereleasename]1.0.42"
