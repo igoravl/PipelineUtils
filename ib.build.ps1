@@ -106,7 +106,7 @@ task Test Build, {
     
     $testResult = Invoke-Pester -Configuration $config
     
-    if ($testResult.FailedCount -gt 0) {
+    if (($testResult.FailedCount + $testResult.FailedBlocksCount + $testResult.FailedContainersCount) -gt 0) {
         Write-Host "Tests failed: $($testResult.FailedCount) of $($testResult.TotalCount)" -ForegroundColor Red
         throw "Tests failed"
     }
