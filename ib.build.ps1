@@ -96,6 +96,7 @@ task Test Build, {
     # Create Pester configuration for Pester 5
     $config = New-PesterConfiguration
     $config.Run.Path = Join-Path $PSScriptRoot 'Tests'
+    $config.Run.PassThru = $true
     $config.TestResult.Enabled = $true
     $config.TestResult.OutputPath = Join-Path $PSScriptRoot 'out/TestResults.xml'
     $config.TestResult.OutputFormat = 'NUnitXml'
@@ -106,8 +107,8 @@ task Test Build, {
     
     $testResult = Invoke-Pester -Configuration $config
     
-    if ($testResult.FailedCount -gt 0) {
-        Write-Host "Tests failed: $($testResult.FailedCount) of $($testResult.TotalCount)" -ForegroundColor Red
+    if (($testResult.FailedCount + $testResult.FailedBlocksCount + $testResult.FailedContainersCount) -gt 0) {
+        Write-Host "Tests failed: $($testResult.FailedCount) failed test(s), $($testResult.FailedBlocksCount) failed block(s), $($testResult.FailedContainersCount) failed container(s), of $($testResult.TotalCount) total" -ForegroundColor Red
         throw "Tests failed"
     }
     else {
